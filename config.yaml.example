@@ -112,6 +112,9 @@ replay_recorder:
   # `google_cloud_storage` ... Save to google cloud storage.
   # `local_file_storage` ... Save to local file storage.
   save_to: <replay_recorder.save_to>
+  # Directory used when save_to is "local_file_storage". Supports absolute or relative paths.
+  # Actual files are placed under <local_file_storage_dir>/<player_id>/.
+  local_file_storage_dir: replays
   # If true, each round is recorded separately. e.g. If a match had three rounds, there will be three videos.
   separate_round: false
   # If true, exit the game when replay upload is done.

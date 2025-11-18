@@ -200,6 +200,7 @@ class Container(containers.DeclarativeContainer):
         replay_streaming_storage=replay_streaming_storage_selector,
         cloud_run=cloud_run,
         transcode_to_hls=config.replay_recorder.transcode_to_hls,
+        local_file_storage_dir=config.replay_recorder.local_file_storage_dir,
     )
 
     screen_customizer = providers.Factory(

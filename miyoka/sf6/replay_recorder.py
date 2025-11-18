@@ -52,6 +52,7 @@ class ReplayRecorder(ReplayRecorderBase):
         save_to: Optional[str] = None,
         separate_round: Optional[bool] = None,
         transcode_to_hls: Optional[bool] = None,
+        local_file_storage_dir: Optional[str] = "replays",
     ):
         super().__init__()
 
@@ -71,6 +72,7 @@ class ReplayRecorder(ReplayRecorderBase):
         self.save_to = save_to
         self.separate_round = separate_round
         self.transcode_to_hls = transcode_to_hls
+        self.local_file_storage_dir = local_file_storage_dir
 
         self.current_replay_id = None
         self.current_metadata = None
@@ -493,10 +495,10 @@ class ReplayRecorder(ReplayRecorderBase):
         self,
         recording_path: str,
         replay_dir: str,
-        filename: int,
+        filename: str,
     ):
         time.sleep(5) # OBS might still be processing the video.
-        pathlib.Path(replay_dir).mkdir(exist_ok=True)
+        pathlib.Path(replay_dir).mkdir(parents=True, exist_ok=True)
         shutil.move(recording_path, f"{replay_dir}/{filename}")
 
     def save_replay(self, recording_path: str):
@@ -524,7 +526,46 @@ class ReplayRecorder(ReplayRecorderBase):
 
 
     def _local_replay_dir(self):
-        return os.path.join(os.getcwd(), "replays")
+        base_dir = self.local_file_storage_dir or "replays"
+
+        if not os.path.isabs(base_dir):
+            base_dir = os.path.join(os.getcwd(), base_dir)
+
+        player_id = self._get_current_player_id()
+        if player_id:
+            return os.path.join(base_dir, str(player_id))
+
+        return base_dir
+
+    def _get_current_player_id(self) -> Optional[str]:
+        if self.replay_search_user_code:
+            return str(self.replay_search_user_code)
+
+        if not self.current_metadata or not self.replay_search_players:
+            return None
+
+        p1_name = self.current_metadata.get("p1", {}).get("player_name", "")
+        p2_name = self.current_metadata.get("p2", {}).get("player_name", "")
+
+        for player in self.replay_search_players:
+            pattern = player.get("pattern")
+            player_id = player.get("id")
+
+            if not player_id:
+                continue
+
+            if not pattern:
+                return str(player_id)
+
+            try:
+                if re.search(pattern, p1_name, re.IGNORECASE) or re.search(pattern, p2_name, re.IGNORECASE):
+                    return str(player_id)
+            except re.error:
+                lower_pattern = pattern.lower()
+                if lower_pattern in p1_name.lower() or lower_pattern in p2_name.lower():
+                    return str(player_id)
+
+        return None
     
     def _local_replay_file_name(self):
         if self.separate_round:
