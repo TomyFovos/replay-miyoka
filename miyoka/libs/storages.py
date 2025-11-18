@@ -7,14 +7,9 @@ import pathlib
 import threading
 import time
 import zipfile
-import datetime
-import argparse
 from google.cloud import storage
 from google.cloud.storage import Client
-from google.auth import impersonated_credentials
-from google.auth.credentials import TokenState
 from google.cloud.exceptions import Conflict
-import google.auth.transport.requests
 from google.cloud.video import transcoder_v1
 from google.cloud.video.transcoder_v1.services.transcoder_service import (
     TranscoderServiceClient,
@@ -99,15 +94,12 @@ class ReplayStorage(BaseStorageClient):
         self,
         download_dir: str,
         skip_download: bool,
-        sa_signed_url_generator_email: str,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.download_dir = download_dir
         self.skip_download = skip_download
-        self.sa_signed_url_generator_email = sa_signed_url_generator_email
-        self.sa_access_cred: impersonated_credentials.Credentials = None
 
     def upload_metadata(self, replay_id, metadata: dict):
         current_dir = pathlib.Path().resolve()
@@ -189,44 +181,6 @@ class ReplayStorage(BaseStorageClient):
 
     def get_downloaded_video_path(self, replay_id: str, round_id: int) -> str:
         return os.path.join(self.download_dir, f"{replay_id}/{round_id}.mp4")
-
-    def get_authenticated_url(self, replay_id: str, round_id: int) -> str:
-        bucket = self.storage_client.bucket(self.bucket_name)
-        source_blob_name = f"{replay_id}/{round_id}.mp4"
-
-        service_account_access_token = self.get_service_account_access_token()
-
-        url = bucket.blob(source_blob_name).generate_signed_url(
-            version="v4",
-            expiration=datetime.timedelta(minutes=15),
-            method="GET",
-            access_token=service_account_access_token,
-            service_account_email=self.sa_signed_url_generator_email,
-        )
-
-        return url
-
-    def get_service_account_access_token(self):
-        if self.sa_access_cred and self.sa_access_cred.token_state == TokenState.FRESH:
-            return self.sa_access_cred.token
-
-        self.sa_access_cred = self._refresh_service_account_access_token()
-
-        return self.sa_access_cred.token
-
-    def _refresh_service_account_access_token(
-        self,
-    ) -> impersonated_credentials.Credentials:
-        credentials, project_id = google.auth.default()
-        target_credentials = impersonated_credentials.Credentials(
-            source_credentials=credentials,
-            target_principal=self.sa_signed_url_generator_email,
-            target_scopes=["https://www.googleapis.com/auth/cloud-platform"],
-            lifetime=3600,  # 1 hour
-        )
-        request = google.auth.transport.requests.Request()
-        target_credentials.refresh(request)
-        return target_credentials
 
     @contextlib.contextmanager
     def open(
@@ -400,13 +354,3 @@ class FrameStorage(BaseStorageClient):
             os.remove(destination_file_name)
 
         return download_dir_path
-
-
-if __name__ == "__main__":
-    import sys
-    from miyoka.container import Container
-
-    replay_storage = Container().replay_storage()
-    replay_id = sys.argv[0]
-    round_id = sys.argv[1]
-    print(replay_storage.get_authenticated_url(replay_id, round_id))

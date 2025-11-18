@@ -5,13 +5,10 @@
 
 # FGC Replay Miyoka 🕹️
 
-FGC Replay Miyoka (Miyoka) is a fighting game replay server for the fighting game community (FGC).
-You can host your Miyoka server to watch your replays from anywhere even if you're away from a console or PC.
+FGC Replay Miyoka (Miyoka) automates recording and analyzing fighting game replays so you can review them whenever you like.
 It's open source and free.
 
-## Demo
-
-https://miyoka-viewer-zx3a43w2pa-an.a.run.app
+> **Heads-up:** The browser-based replay viewer now lives in a separate project. This repository retains the replay capture, upload, and analysis pipeline only.
 
 ## Why Miyoka?
 
@@ -23,8 +20,8 @@ This interface is a bit counter-intuitive because:
 
 Miyoka's goal is to change this flow to:
 
-- You watch your replays on your phone whenever you have time, like when you're commuting to the office or during a lunch break.
-- Ater a long day at work, you can play online matches right away because you already finished recapping your replays in daytime.
+- You capture your replays automatically while you focus on playing.
+- While you're away from your setup, you can load the exported videos and datasets in any tool you like (including the separate Miyoka viewer project) to study the matches.
 - You can effectively use your time.
 
 In short, Miyoka is an assistant to let you enjoy fighting games more than ever! 🕹️
@@ -32,9 +29,7 @@ In short, Miyoka is an assistant to let you enjoy fighting games more than ever!
 ## Your replays are private
 
 You host your Miyoka server, meaning you are the only one who can see your replays.
-You have to set your unique password when you're setting up a new Miyoka server.
-
-If you want to share your replays with a friend or a coach, you can download and share a replay with them or tell them the replay ID.
+You have full control over where the captured videos and metadata live. Share individual files with a friend or coach when you want feedback.
 
 ## Getting Started
 

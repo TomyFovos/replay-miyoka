@@ -18,7 +18,6 @@ from miyoka.libs.replay_analyzer import ReplayAnalyzer
 from miyoka.libs.cloud_run import CloudRun
 from miyoka.libs.scene_exporter import SceneExporter
 from miyoka.libs.scene_store import SceneStore
-from miyoka.libs.replay_viewer_helper import ReplayViewerHelper
 from unittest.mock import Mock
 import importlib
 
@@ -70,7 +69,6 @@ class Container(containers.DeclarativeContainer):
         bucket_name=config.gcp.storages.replays.bucket_name,
         download_dir=config.gcp.storages.replays.download_dir,
         skip_download=config.gcp.storages.replays.skip_download,
-        sa_signed_url_generator_email=config.gcp.service_accounts.signed_url_generator.email,
     )
 
     replay_streaming_storage_bucket_name = providers.Callable(
@@ -210,19 +208,6 @@ class Container(containers.DeclarativeContainer):
         logger=logger,
         game_window_helper=game_window_helper,
         exit_to_desktop=config.replay_recorder.exit_to_desktop,
-    )
-
-    replay_viewer_helper = providers.Factory(
-        ReplayViewerHelper,
-        logger=logger,
-        password=config.replay_viewer.password,
-        debug_mode=config.replay_viewer.debug_mode,
-        players=config.game.players,
-        time_range=config.replay_viewer.time_range,
-        after_time=config.replay_viewer.after_time,
-        min_mr_in_chart=config.replay_viewer.min_mr_in_chart,
-        max_mr_in_chart=config.replay_viewer.max_mr_in_chart,
-        default_played_after_filter=config.replay_viewer.default_played_after_filter,
     )
 
     scene_splitter = providers.Factory(

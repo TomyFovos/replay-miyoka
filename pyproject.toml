@@ -33,12 +33,6 @@ optional = true
 dxcam = "^0.0.5"
 pydirectinput = "^1.0.4"
 
-[tool.poetry.group.frontend]
-optional = true
-
-[tool.poetry.group.frontend.dependencies]
-streamlit = "^1.37.1"
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

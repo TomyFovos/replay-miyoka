@@ -56,48 +56,7 @@ Write-Host "Enabling services on your GCP project..."
 # https://developers.google.com/apis-explorer/#p/run/v2/
 gcloud services enable run.googleapis.com
 gcloud services enable vision.googleapis.com
-gcloud services enable secretmanager.googleapis.com
-gcloud services enable iamcredentials.googleapis.com
 gcloud services enable transcoder.googleapis.com
-
-Write-Host "Creating service accounts on GCP..."
-$gcp_replay_viewer_service_account_name = "miyoka-replay-viewer"
-$gcp_replay_viewer_service_account = "${gcp_replay_viewer_service_account_name}@${google_cloud_platform_project_id}.iam.gserviceaccount.com"
-$gcp_signed_url_service_account_name = "miyoka-signed-url"
-$gcp_signed_url_service_account = "${gcp_signed_url_service_account_name}@${google_cloud_platform_project_id}.iam.gserviceaccount.com"
-
-gcloud iam service-accounts create ${gcp_replay_viewer_service_account_name} `
-    --description="Service account for Miyoka Replay Viewer" `
-    --display-name="${gcp_replay_viewer_service_account_name}"
-
-# Setup service accounts and permission grants for generating signed URLs to directly stream the replay video from the GCS.
-# https://cloud.google.com/storage/docs/access-control/signing-urls-with-helpers#storage-signed-url-object-python
-gcloud iam service-accounts create ${gcp_signed_url_service_account_name} `
-    --description="Service account for Miyoka Signed URL Generator" `
-    --display-name="${gcp_signed_url_service_account_name}"
-
-# This is needed for basic operational resource access in the Cloud Run instance.
-gcloud projects add-iam-policy-binding ${google_cloud_platform_project_id} `
-    --member="serviceAccount:${gcp_replay_viewer_service_account}" `
-    --role="roles/editor"
-
-# This is needed for generating an SA access token from the replay viewer service account.
-gcloud projects add-iam-policy-binding ${google_cloud_platform_project_id} `
-    --member="serviceAccount:${gcp_replay_viewer_service_account}" `
-    --role="roles/iam.serviceAccountTokenCreator"
-
-# This is needed for letting the SA to read the replay video (mp4/hls).
-gcloud projects add-iam-policy-binding ${google_cloud_platform_project_id} `
-    --member="serviceAccount:${gcp_signed_url_service_account}" `
-    --role="roles/storage.objectViewer"
-
-# This is needed for iam.serviceAccounts.signBlob permission to let the SA to generate a signed URL.
-gcloud projects add-iam-policy-binding ${google_cloud_platform_project_id} `
-    --member="serviceAccount:${gcp_signed_url_service_account}" `
-    --role="roles/iam.serviceAccountTokenCreator"
-
-(Get-Content ./config.yaml).Replace('<service_accounts.replay_viewer.email>', "$gcp_replay_viewer_service_account") | Set-Content ./config.yaml
-(Get-Content ./config.yaml).Replace('<service_accounts.signed_url_generator.email>', "$gcp_signed_url_service_account") | Set-Content ./config.yaml
 
 Write-Host @"
 ===========================================================================

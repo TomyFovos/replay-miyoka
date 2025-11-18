@@ -1,7 +1,5 @@
 IMAGE_NAME_ANALYZER := miyoka-replay-analyzer
-IMAGE_NAME_VIEWER := miyoka-replay-viewer
 DOCKER_FILE_ANALYZER := container_images/analyzer/Dockerfile
-DOCKER_FILE_VIEWER := container_images/viewer/Dockerfile
 
 
 # Create a config file
@@ -11,9 +9,6 @@ config:
 # Build the Docker image
 build-analyzer:
 	docker buildx build --platform linux/amd64 -t $(IMAGE_NAME_ANALYZER) -f $(DOCKER_FILE_ANALYZER) .
-
-build-viewer:
-	docker buildx build --platform linux/amd64 -t $(IMAGE_NAME_VIEWER) -f $(DOCKER_FILE_VIEWER) .
 
 # Clean up the Docker image
 clean:
@@ -38,26 +33,6 @@ analyze-in-docker:
 		--env GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json \
 		$(IMAGE_NAME_ANALYZER)
 
-viewer-dev:
-	poetry run streamlit run miyoka/sf6/replay-viewer.py --server.headless true
-
-viewer:
-	poetry run streamlit run miyoka/sf6/replay-viewer.py \
-		--server.port=8080 \
-		--server.address=0.0.0.0 \
-		--server.fileWatcherType="none" \
-		--server.headless true \
-		--client.toolbarMode viewer
-
-viewer-in-docker:
-	docker run \
-		--rm \
-		--name miyoka-viewer \
-		-p 8080:8080 \
-		-v "$(HOME)/.config/gcloud/application_default_credentials.json":/gcp/creds.json:ro \
-		--env GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json \
-		$(IMAGE_NAME_VIEWER)
-
 group_scenes:
 	poetry run python miyoka/group-scenes.py
 
@@ -66,15 +41,8 @@ push-analyzer:
 	docker tag $(IMAGE_NAME_ANALYZER) $(REGION)-docker.pkg.dev/$(GCP_PROJECT)/$(ARTIFACT_REGISTRY_REPO)/$(IMAGE_NAME_ANALYZER):latest
 	docker push $(REGION)-docker.pkg.dev/$(GCP_PROJECT)/$(ARTIFACT_REGISTRY_REPO)/$(IMAGE_NAME_ANALYZER)
 
-push-viewer:
-	docker tag $(IMAGE_NAME_VIEWER) $(REGION)-docker.pkg.dev/$(GCP_PROJECT)/$(ARTIFACT_REGISTRY_REPO)/$(IMAGE_NAME_VIEWER):latest
-	docker push $(REGION)-docker.pkg.dev/$(GCP_PROJECT)/$(ARTIFACT_REGISTRY_REPO)/$(IMAGE_NAME_VIEWER)
-
 pull-analyzer:
 	docker pull $(REGION)-docker.pkg.dev/$(GCP_PROJECT)/$(ARTIFACT_REGISTRY_REPO)/$(IMAGE_NAME_ANALYZER):latest
-
-pull-viewer:
-	docker pull $(REGION)-docker.pkg.dev/$(GCP_PROJECT)/$(ARTIFACT_REGISTRY_REPO)/$(IMAGE_NAME_VIEWER):latest
 
 auth-artifact-registry:
 	gcloud auth configure-docker $(REGION)-docker.pkg.dev
@@ -100,21 +68,9 @@ run-job:
 		--region $(REGION) \
 		--update-env-vars=REPLAY_ANALYZER_REPLAY_ID=$(REPLAY_ANALYZER_REPLAY_ID)
 
-deploy-viewer-service:
-	gcloud run deploy miyoka-viewer \
-		--region $(REGION) \
-		--allow-unauthenticated \
-		--memory=2Gi \
-		--image="$(REGION)-docker.pkg.dev/$(GCP_PROJECT)/$(ARTIFACT_REGISTRY_REPO)/$(IMAGE_NAME_VIEWER):latest"
-
-delete-viewer-service:
-	gcloud run services delete miyoka-viewer \
-		--region $(REGION)
-
 # Deploy the Docker image
 deploy-analyzer: build-analyzer push-analyzer
-deploy-viewer: build-viewer push-viewer deploy-viewer-service
-deploy-and-run: deploy run-job
+deploy-and-run: deploy-analyzer run-job
 
 lint:
 	poetry run flake8 miyoka
