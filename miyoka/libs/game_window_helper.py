@@ -4,8 +4,9 @@ import cv2 as cv
 import numpy as np
 import pathlib
 from logging import Logger
-from google.cloud import vision
 from miyoka.libs.utils import retry
+import pytesseract
+from PIL import Image
 
 try:
     import dxcam
@@ -224,31 +225,25 @@ class GameWindowHelper:
 
     @retry(max_retries=3, delay=2)
     def detect_text(self, path):
-        """Detects text in the file."""
+        """Detects text in the file using local Tesseract OCR."""
 
-        client = vision.ImageAnnotatorClient()
+        # 画像をグレースケールで読み込み
+        image = cv.imread(path, cv.IMREAD_GRAYSCALE)
+        if image is None:
+            raise ValueError(f"Failed to load image for OCR: {path}")
 
-        with open(path, "rb") as image_file:
-            content = image_file.read()
+        # 簡単な前処理: 二値化でコントラストを上げる
+        _, thresh = cv.threshold(
+            image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU
+        )
 
-        image = vision.Image(content=content)
+        pil_img = Image.fromarray(thresh)
 
-        response = client.text_detection(image=image)
-        texts = response.text_annotations
+        # 一行テキスト想定で英数字を優先して読む
+        text = pytesseract.image_to_string(
+            pil_img,
+            lang="eng",
+            config="--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:/-"
+        )
 
-        for text in texts:
-            vertices = [
-                f"({vertex.x},{vertex.y})" for vertex in text.bounding_poly.vertices
-            ]
-
-            # print("bounds: {}".format(",".join(vertices)))
-
-            return text.description
-
-        if response.error.message:
-            raise Exception(
-                "{}\nFor more info on error messages, check: "
-                "https://cloud.google.com/apis/design/errors".format(
-                    response.error.message
-                )
-            )
+        return text.strip()

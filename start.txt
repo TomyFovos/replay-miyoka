@@ -1,0 +1,9 @@
+ST6の方の設定
+	言語設定EN
+	画質設定Nomal→なんでもいいかも
+	画面サイズ設定→1280　720
+	ウィンドウ→Window
+
+OBSとスト六を開く。（途中で、ユーザー検索の初期画面が違うせいで止まるかも）
+このディレクトリをルートとして、以下を実行。
+ powershell.exe -executionpolicy bypass -file .\record-replay.ps1

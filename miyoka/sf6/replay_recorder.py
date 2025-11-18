@@ -7,6 +7,7 @@ import subprocess
 import re
 import copy
 import shutil
+import cv2 as cv
 from typing import Optional
 from dependency_injector.providers import Factory
 from datetime import datetime, timezone
@@ -349,8 +350,30 @@ class ReplayRecorder(ReplayRecorderBase):
                     pydirectinput.press("f")  # Click No to the offline mode
                 case "MainFg":
                     pydirectinput.press("a")  # Left
-                case "OptionsLanguageDisplayLanguageEnglish" | "MultiOptions":
-                    pydirectinput.press("ESC")  # Exit
+                case "OptionsLanguageDisplayLanguageEnglish":
+                    # From Language settings, navigate back to main menu
+                    pydirectinput.press("ESC")  # Exit from language settings
+                    time.sleep(1)
+                    pydirectinput.press("ESC")  # Exit from options menu
+                    time.sleep(1)
+                    pydirectinput.press("ESC")  # Exit to main menu
+                case "MultiOptions":
+                    # Instead of ESC, navigate to Game options to eventually reach CFN
+                    pydirectinput.press("f")  # Enter Game options from Multi Options
+                    time.sleep(1)
+                case "OptionsGame":
+                    pydirectinput.press("E")  # Navigate in Game options (1/5)
+                    time.sleep(0.5)
+                    pydirectinput.press("E")  # Navigate in Game options (2/5)
+                    time.sleep(0.5)
+                    pydirectinput.press("E")  # Navigate in Game options (3/5)
+                    time.sleep(0.5)
+                    pydirectinput.press("E")  # Navigate in Game options (4/5)
+                    time.sleep(0.5)
+                    pydirectinput.press("E")  # Navigate in Game options (5/5)
+                    time.sleep(0.5)
+                    # time.sleep(1.5)
+                    # pydirectinput.press("q")  # Left again to Language settings (2 steps required)
                 case _:
                     pass
 
@@ -375,9 +398,13 @@ class ReplayRecorder(ReplayRecorderBase):
         self.current_replay_id = current_replay_id
 
     def is_replay_exist(self) -> bool:
+        # リプレイIDが取得できていない場合は存在チェックをスキップ
+        if not self.current_replay_id:
+            return False
+
         if self.save_to == "google_cloud_storage":
             if self.replay_dataset.is_exists(self.current_replay_id):
-                self.logger.warn(f"Replay {current_replay_id} already exists")
+                self.logger.warn(f"Replay {self.current_replay_id} already exists")
                 return True
         elif self.save_to == "local_file_storage":
             filename = self._local_replay_file_name()
@@ -498,7 +525,7 @@ class ReplayRecorder(ReplayRecorderBase):
         filename: str,
     ):
         time.sleep(5) # OBS might still be processing the video.
-        pathlib.Path(replay_dir).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(replay_dir).mkdir(exist_ok=True)
         shutil.move(recording_path, f"{replay_dir}/{filename}")
 
     def save_replay(self, recording_path: str):
