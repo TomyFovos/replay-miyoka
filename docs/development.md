@@ -1,69 +1,67 @@
-# Development
+# 開発
 
-## Overview
+## 概要
 
-As a high-level concept, there are two basic components of Miyoka:
+Miyoka は大きく次の 2 コンポーネントで構成されています。
 
-1. [Replay Uploader](docs/uploader.md) ... The program to upload your replays from a fighting game to a cloud storage.
-1. [Replay Analyzer](docs/analyzer.md) ... The program to analyze your replays and create a dataset of replays.
+1. [Replay Uploader](docs/uploader.md) … 格闘ゲームから取得したリプレイをクラウドストレージへアップロードするプログラム。
+1. [Replay Analyzer](docs/analyzer.md) … リプレイを解析し、データセットを生成するプログラム。
 
-> **Note:** The browser-based replay viewer has moved to a separate project. This repository now focuses solely on uploading and analyzing replays.
+> **補足:** ブラウザ版リプレイビューアーは別プロジェクトへ移行済みです。本リポジトリはリプレイのアップロードと解析機能に特化しています。
 
-## Group scenes by similarity
+## 類似シーンのグルーピング
 
-Install:
+インストール例:
 
 ```
 poetry install
 ```
 
-Commands:
+実行例:
 
 ```
 make group_scenes
 ```
 
-Output:
+出力:
 
 ```
 # Scenes:
 # `scenes/<replay-id>/<round-id>/scene-<scene-id>.mp4`
 
 # Scenes by similarity:
-# The base scene is compared against the other scenes and if a similar one is found, it's copied under the folder.
+# ベースシーンと他のシーンを比較し、類似度が閾値を超えた場合に同フォルダへコピーします。
 # `scenes/<base-replay-id>/<base-round-id>/scene-<base-scene-id>/<target-replay-id>-<target-round-id>-scene-<target-scene-id>.mp4`
 ```
 
-Approach:
+アプローチ概要:
 
-- Scene split:
-    - [Clustering](https://scikit-learn.org/stable/modules/clustering.html) each scene. Centroids are the frames that contain actions e.g. LP, MP, HP, etc.
-    - If action frames are close enough, they are concatenated as one scene i.e. `eps=30` of DBSCAN. 
-    - Prefix and suffix frames are attached to the scene.
-    - e.g. p1: ["4", "4 LP", "4 LP", "1", "1", "1", "1", "1 HP", "2"] => p1 scenes: [["4", "4 LP", "4 LP", "1"], ["1", "1 HP", "2"]]
-- Vectorize scenes:
-    - Extract features in Bag of Words style. Each frame is tokenized and unique-count per scene.
-    - For arrow direction changes, we use bigram.
-- Group scenes by similarity:
-    - Calculate the similarity by the vectorized scenes.
-    - We use Cosine similarity 
+- シーン分割:
+    - 各シーンを[クラスタリング](https://scikit-learn.org/stable/modules/clustering.html)。クラスタの中心（Centroid）は LP, MP, HP などのアクションが含まれるフレームです。
+    - アクションフレームの距離が近い場合は 1 つのシーンとして結合（DBSCAN の `eps=30` など）。
+    - プレフィックス／サフィックスのフレームをシーンへ付加。
+    - 例: p1: ["4", "4 LP", "4 LP", "1", "1", "1", "1", "1 HP", "2"] => p1 scenes: [["4", "4 LP", "4 LP", "1"], ["1", "1 HP", "2"]]
+- シーンのベクトル化:
+    - Bag-of-Words 形式で特徴量を抽出。各フレームをトークン化し、シーンごとのユニークカウントを計測。
+    - 矢印方向の変化はバイグラムで表現。
+- 類似度によるグルーピング:
+    - ベクトル化したシーン同士の類似度を計算。
+    - 指標としてコサイン類似度を使用。
 
 ## Google Cloud Platform (GCP)
 
-All of your data is stored in your private cloud project on GCP.
-Here is the list of services need be enabled to run Miyoka:
+Miyoka で扱うデータはすべて、自分が所有する GCP プロジェクト内に保存されます。利用にあたり有効化が必要な主なサービスは次のとおりです。
 
-- [BigQuery](https://cloud.google.com/bigquery?hl=en) ... Database to manage your replay records.
-- [Cloud Storage](https://cloud.google.com/storage?hl=en) (a.k.a. GCS) ... Object storage to store your replay videos (mp4/hls format).
-- [Cloud Vision](https://cloud.google.com/vision?hl=en) ... OCR for reading texts from an image.
-- [Cloud Run](https://cloud.google.com/run?hl=en) ... Serverless service to run replay analyzer jobs.
-- [IAM Service Account Credentials API](https://cloud.google.com/iam/docs/reference/credentials/rest) ... Create service account token for generating a signed URL to replays.
-- (Optional) [Artifact Registry](https://cloud.google.com/artifact-registry) ... Docker registry to manage images of Replay analyzer. It's not necessary by default.
+- [BigQuery](https://cloud.google.com/bigquery?hl=en) … リプレイ記録を管理するデータベース。
+- [Cloud Storage](https://cloud.google.com/storage?hl=en)（GCS）… リプレイ動画（mp4/hls）を保管するオブジェクトストレージ。
+- [Cloud Vision](https://cloud.google.com/vision?hl=en) … 画像からテキストを読み取る OCR。
+- [Cloud Run](https://cloud.google.com/run?hl=en) … リプレイ解析ジョブを実行するサーバーレス基盤。
+- [IAM Service Account Credentials API](https://cloud.google.com/iam/docs/reference/credentials/rest) … サービスアカウントのトークンを発行し、リプレイ向け署名付き URL を生成。
+- （任意）[Artifact Registry](https://cloud.google.com/artifact-registry) … リプレイアナライザー用 Docker イメージのレジストリ。デフォルトでは不要。
 
-You will be charged by Google as you use these services. Miyoka is carefully designed to minimize the running cost.
-In general, the monthly cost would be between $5 to $20. Again, Miyoka itself is free and we don't receive any of the payment from you.
+これらのサービス利用分については Google から課金されますが、Miyoka はランニングコストを抑える設計になっています。目安として月額 5～20 USD 程度です。繰り返しになりますが、Miyoka 自体は無償で提供されており、開発者側が料金を受け取ることはありません。
 
-## Login to GCR Container registry
+## GCR コンテナレジストリにログイン
 
 ```
 gcloud auth configure-docker asia-northeast1-docker.pkg.dev
@@ -73,22 +71,22 @@ gcloud auth configure-docker asia-northeast1-docker.pkg.dev
 make build-analyzer
 ```
 
-## Replay analyzer
+## Replay Analyzer
 
-Prerequisites:
+前提条件の一例:
 
-- OS: Linux/Mac
+- 対応 OS: Linux / macOS
 - Python 3.11.3
 - [poetry](https://python-poetry.org/docs/#installing-with-pipx)
 - GNU make https://gnuwin32.sourceforge.net/packages/make.htm
 
-Install:
+インストール:
 
 ```
 poetry install
 ```
 
-Commands:
+コマンド:
 
 ```
 REPLAY_ANALYZER_REPLAY_ID="id" \
@@ -96,7 +94,7 @@ REPLAY_ANALYZER_REPLAY_ID="id" \
   make analyze
 ```
 
-or run on docker container:
+Docker コンテナで実行する場合:
 
 ```
 make analyzed

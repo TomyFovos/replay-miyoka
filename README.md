@@ -5,33 +5,30 @@
 
 # FGC Replay Miyoka 🕹️
 
-FGC Replay Miyoka (Miyoka) automates recording and analyzing fighting game replays so you can review them whenever you like.
-It's open source and free.
+FGC Replay Miyoka（以下 Miyoka）は、対戦格闘ゲームのリプレイ録画から解析までを自動化し、いつでもどこでも試合内容を振り返れるようにするオープンソースのツールです。ライセンスは無償で利用できます。
 
-> **Heads-up:** The browser-based replay viewer now lives in a separate project. This repository retains the replay capture, upload, and analysis pipeline only.
+> **お知らせ:** ブラウザ版のリプレイビューアーは別プロジェクトへ移行しました。このリポジトリには、リプレイのキャプチャ・アップロード・解析用パイプラインのみが含まれます。
 
-## Why Miyoka?
+## なぜ Miyoka なのか
 
-Most of the fighting games allow you to watch replays in the game UI on a console or PC/Steam, but don't allow you to watch it from your mobile phones.
-This interface is a bit counter-intuitive because:
+多くの格闘ゲームはコンソールや PC（Steam）上でリプレイを視聴できますが、スマートフォンなどモバイル環境で気軽に確認する手段はあまり整っていません。その結果、次のような課題が生まれます。
 
-- When you're playing a fighting game on a console or PC, you'd want to play something interactive like online matches or training mode. You are reluctant to watch replays because it's boring.
-- If you don't watch replays, you have no idea how you're _actually_ playing, so you have no idea why you're losing in online matches, which is frustrating.
+- プレイ中はオンライン対戦やトレーニングモードなどインタラクティブなコンテンツを優先しがちで、退屈さからリプレイ視聴を後回しにしてしまう。
+- リプレイを見ないままだと、自分が実際にどのようなプレイをしているのか分からず、なぜ負けているのかも把握できない。
 
-Miyoka's goal is to change this flow to:
+Miyoka は、次のような流れを自動化することで、こうしたボトルネックを解消します。
 
-- You capture your replays automatically while you focus on playing.
-- While you're away from your setup, you can load the exported videos and datasets in any tool you like (including the separate Miyoka viewer project) to study the matches.
-- You can effectively use your time.
+- 実際のプレイに集中している間に、裏側でリプレイを自動収集する。
+- セットアップから離れている時間でも、エクスポートした動画やデータセットを任意のツール（別プロジェクトの Miyoka ビューアーを含む）で読み込み、効率よく試合を研究できる。
+- 限られた時間を最大限に活用できる。
 
-In short, Miyoka is an assistant to let you enjoy fighting games more than ever! 🕹️
+まとめると、Miyoka は格闘ゲームをこれまで以上に楽しむための実験的な「相棒」のようなツールです。🕹️
 
-## Your replays are private
+## リプレイは完全にプライベート
 
-You host your Miyoka server, meaning you are the only one who can see your replays.
-You have full control over where the captured videos and metadata live. Share individual files with a friend or coach when you want feedback.
+Miyoka サーバーは自分でホストするため、リプレイを閲覧できるのはあなただけです。収集された動画やメタデータの保管場所もすべて自分で管理でき、フィードバックが欲しいときだけ個別ファイルをコーチや仲間と共有できます。
 
-## Getting Started
+## はじめ方
 
-See [Getting Started](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/blob/main/docs/getting_started.md) doc.
+[Getting Started](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/blob/main/docs/getting_started.md) を参照してください。
 

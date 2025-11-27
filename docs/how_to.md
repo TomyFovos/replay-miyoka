@@ -1,30 +1,26 @@
-# How to use Miyoka
+# Miyoka の使い方
 
-## Why should I watch my replays?
+## なぜリプレイを見るべきか
 
-Watching own replays is an essential part to improve your playing style in the fighting game.
-Imagine you want to be a fasion model 🕺 but don't have a mirror 🪞 to see how you actually look.
-You show up in an audition with a confidence but the interviewers see you differently 😐.
-You need to have time to see yourself _objectively_ with a mirror.
+格闘ゲームが上達するかどうかは、自分のプレイをどれだけ客観的に見直せるかに大きく左右されます。たとえるなら「モデルを目指しているのに、鏡をほとんど見ない」ような状態です。本人は自信があっても、周りからの見え方とズレてしまうことがあります。鏡越しに自分を確認する時間が必要です。
 
-In the fighting game, the same principle applys. You need to have time to see how you actually played online matches, objectively.
-So that you notice what's missing in your playing style.
+格闘ゲームも同じで、オンライン対戦で実際にどんな動きをしていたのかを録画で見返し、クセや弱点を把握する時間が欠かせません。
 
-## How should I watch my replays?
+## どうリプレイを見ればよいか
 
-Here are the couple of advises:
+闇雲に見返すより、次のようなポイントを決めておくと効率的です。
 
-- Find one common pattern that you believe it's the reason that you lost in matches. (e.g. "I got combos from jump attacks many times last night!")
-- Make one objective that you believe you can achieve when you're playing the game (e.g. "I will focus on anti-air today.").
-- Asking advises from advanced players or other fighting game forums is also helpful (e.g. "Is there any tips to make anti-air easier?")
-- Don't try to fix everything at once! One step at a time.
+- 負けにつながったと考えられる共通パターンを 1 つ見つける（例: 「昨夜はジャンプ攻撃からのコンボを何度も食らった」）。
+- 対戦時に意識する目標を 1 つだけ決める（例: 「今日は対空だけは必ず出す」）。
+- 上級者や掲示板など、他人の視点からも意見をもらう（例: 「対空を安定させるコツはありますか？」）。
+- 一度に全部直そうとせず、項目を絞って少しずつ修正する。
 
-In Miyoka, you can walk through different matches and rounds, quickly and productively.
+Miyoka を使うと、複数の試合やラウンドを素早く切り替えながら振り返れるので、上のようなポイントを意識した見直しがしやすくなります。
 
-## Getting started
+## はじめて使う方へ
 
-See [Getting started](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/blob/main/docs/getting_started.md).
+セットアップ手順については [Getting started](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/blob/main/docs/getting_started.md) を参照してください。
 
-## Feedback
+## フィードバック
 
-Create an issue in [the GitHub repository](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka).
+改善のアイデアや不具合の報告は、[GitHub リポジトリの Issue](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka) までお願いします。
