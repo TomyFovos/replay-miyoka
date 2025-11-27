@@ -525,8 +525,16 @@ class ReplayRecorder(ReplayRecorderBase):
         filename: str,
     ):
         time.sleep(5) # OBS might still be processing the video.
-        pathlib.Path(replay_dir).mkdir(exist_ok=True)
-        shutil.move(recording_path, f"{replay_dir}/{filename}")
+        destination_dir = pathlib.Path(replay_dir)
+        destination_dir.mkdir(parents=True, exist_ok=True)
+        destination_path = destination_dir.joinpath(filename)
+
+        try:
+            shutil.move(recording_path, str(destination_path))
+        except Exception as ex:
+            self.logger.error(
+                f"Failed to move replay from {recording_path} to {destination_path}: {ex}"
+            )
 
     def save_replay(self, recording_path: str):
         if self.save_to == "google_cloud_storage":
