@@ -69,20 +69,13 @@ replay_recorder:
   stop_after_duplicate_replays: 3
   # If true, skip recording the replay. This is useful to extract only replay summaries.
   skip_recording: false
-  # Where the recorded replay to be saved at
-  # `google_cloud_storage` ... Save to google cloud storage.
-  # `local_file_storage` ... Save to local file storage.
-  save_to: <replay_recorder.save_to>
-  # Directory used when save_to is "local_file_storage". Supports absolute or relative paths.
+  # Directory to save the recorded replays. Supports absolute or relative paths.
   # Actual files are placed under <local_file_storage_dir>/<player_id>/.
   local_file_storage_dir: replays
   # If true, each round is recorded separately. e.g. If a match had three rounds, there will be three videos.
   separate_round: false
   # If true, exit the game when replay upload is done.
   exit_to_desktop: true
-  # If true, requests Transcoder API to convert the mp4 video to HLS.
-  # This improves the streaming experience when using an HLS player.
-  transcode_to_hls: true
 replay_analyzer:
   # Batch size of the frame splitter
   batch_size: 1000

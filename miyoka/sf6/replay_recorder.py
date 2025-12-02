@@ -1,11 +1,9 @@
 from logging import Logger
 import os
-import json
 import time
 import pydirectinput
 import subprocess
 import re
-import copy
 import shutil
 import cv2 as cv
 from typing import Optional
@@ -14,8 +12,6 @@ from datetime import datetime, timezone
 from miyoka.libs.utils import cleanup_dir
 from miyoka.libs.replay_analyzer import ReplayAnalyzer
 from miyoka.libs.cloud_run import CloudRun
-from miyoka.libs.storages import ReplayStorage, ReplayStreamingStorage
-from miyoka.libs.bigquery import ReplayDataset
 from miyoka.libs.replay_recorder import ReplayRecorder as ReplayRecorderBase
 from miyoka.libs.game_window_helper import WIDTH_1280, HEIGHT_720
 from miyoka.sf6.game_window_helper import (
@@ -41,18 +37,13 @@ class ReplayRecorder(ReplayRecorderBase):
         game_window_helper: GameWindowHelper,
         analyzer_operation_mode: bool,
         replay_analyzer_factory: Factory[ReplayAnalyzer],
-        replay_dataset: ReplayDataset,
-        replay_storage: ReplayStorage,
-        replay_streaming_storage: ReplayStreamingStorage,
         cloud_run: CloudRun,
         replay_search_players: Optional[list[dict[str, str]]] = None,
         replay_search_replay_ids: Optional[list[str]] = None,
         max_replays_per_run: Optional[int] = None,
         stop_after_duplicate_replays: Optional[int] = None,
         skip_recording: Optional[bool] = None,
-        save_to: Optional[str] = None,
         separate_round: Optional[bool] = None,
-        transcode_to_hls: Optional[bool] = None,
         local_file_storage_dir: Optional[str] = "replays",
     ):
         super().__init__()
@@ -63,16 +54,11 @@ class ReplayRecorder(ReplayRecorderBase):
         self.replay_search_replay_ids = replay_search_replay_ids
         self.analyzer_operation_mode = analyzer_operation_mode
         self.replay_analyzer_factory = replay_analyzer_factory
-        self.replay_dataset = replay_dataset
-        self.replay_storage = replay_storage
-        self.replay_streaming_storage = replay_streaming_storage
         self.cloud_run = cloud_run
         self.max_replays_per_run = max_replays_per_run
         self.stop_after_duplicate_replays = stop_after_duplicate_replays
         self.skip_recording = skip_recording
-        self.save_to = save_to
         self.separate_round = separate_round
-        self.transcode_to_hls = transcode_to_hls
         self.local_file_storage_dir = local_file_storage_dir
 
         self.current_replay_id = None
@@ -286,9 +272,6 @@ class ReplayRecorder(ReplayRecorderBase):
                         self.replay_done = True
                         continue
 
-                    if self.save_to == "google_cloud_storage":
-                        self.extract_replay_summary(frame)
-
                     pydirectinput.press("f")  # Enter - Start watching replay
 
                     self.in_replay = True
@@ -311,15 +294,6 @@ class ReplayRecorder(ReplayRecorderBase):
                     self.in_replay = False
                     g_repeat_mode = False
                     self.replay_done = True
-
-                    if self.save_to == "google_cloud_storage":
-                        threading.Thread(
-                            target=self.insert_replay_dataset,
-                            kwargs={
-                                "replay_id": self.current_replay_id,
-                                "metadata": copy.deepcopy(self.current_metadata),
-                            },
-                        ).start()
 
                     if self.analyzer_operation_mode == "schedule":
                         # Analyze asynchronously so the uploading iteration is not blocked.
@@ -498,26 +472,6 @@ class ReplayRecorder(ReplayRecorderBase):
             metadata=metadata,
         )
         
-    def upload_replay(
-        self,
-        recording_path: str,
-        replay_id: str,
-        round_id: int,
-        transcode_to_hls: Optional[bool] = None,
-    ):
-        self.replay_storage.upload_file(
-            recording_path,
-            replay_id,
-            f"{round_id}.mp4",
-            delete_original=True,
-            initial_delay_sec=5,  # Wait for 5 seconds before starts uploading, becuase OBS might not have finished exporting the file.
-        )
-
-        if transcode_to_hls:
-            self.replay_streaming_storage.transcode_video(
-                self.replay_storage.bucket_name, replay_id, round_id
-            )
-
     def save_replay_locally(
         self,
         recording_path: str,
@@ -537,27 +491,15 @@ class ReplayRecorder(ReplayRecorderBase):
             )
 
     def save_replay(self, recording_path: str):
-        if self.save_to == "google_cloud_storage":
-            # Upload to GCS
-            threading.Thread(
-                target=self.upload_replay,
-                kwargs={
-                    "recording_path": recording_path,
-                    "replay_id": self.current_replay_id,
-                    "round_id": self.round,
-                    "transcode_to_hls": self.transcode_to_hls,
-                },
-            ).start()
-        elif self.save_to  == "local_file_storage":
-            # Save to local file storage
-            threading.Thread(
-                target=self.save_replay_locally,
-                kwargs={
-                    "recording_path": recording_path,
-                    "replay_dir": self._local_replay_dir(),
-                    "filename": self._local_replay_file_name(),
-                },
-            ).start()
+        # Save to local file storage
+        threading.Thread(
+            target=self.save_replay_locally,
+            kwargs={
+                "recording_path": recording_path,
+                "replay_dir": self._local_replay_dir(),
+                "filename": self._local_replay_file_name(),
+            },
+        ).start()
 
 
     def _local_replay_dir(self):

@@ -2,8 +2,6 @@ from dependency_injector import containers, providers
 import os
 from miyoka.libs.logger import setup_logger
 from miyoka.libs.storages import (
-    ReplayStorage,
-    ReplayStreamingStorage,
     FrameStorage,
     init_storage_client,
 )
@@ -59,28 +57,6 @@ class Container(containers.DeclarativeContainer):
         init_bq_client,
         project_id=config.gcp.project_id,
         location=config.gcp.region,
-    )
-
-    replay_storage = providers.Singleton(
-        ReplayStorage,
-        storage_client=storage_client,
-        logger=logger,
-        location=config.gcp.region,
-        bucket_name=config.gcp.storages.replays.bucket_name,
-        download_dir=config.gcp.storages.replays.download_dir,
-        skip_download=config.gcp.storages.replays.skip_download,
-    )
-
-    replay_streaming_storage_bucket_name = providers.Callable(
-        _replay_streaming_storage_bucket_name, config.gcp.storages.replays.bucket_name
-    )
-
-    replay_streaming_storage = providers.Singleton(
-        ReplayStreamingStorage,
-        storage_client=storage_client,
-        logger=logger,
-        location=config.gcp.region,
-        bucket_name=replay_streaming_storage_bucket_name,
     )
 
     frame_storage = providers.Singleton(
@@ -160,24 +136,6 @@ class Container(containers.DeclarativeContainer):
         round_analyzer_factory=round_analyzer.provider,
     )
 
-    replay_dataset_selector = providers.Selector(
-        config.replay_recorder.save_to,
-        google_cloud_storage=replay_dataset,
-        local_file_storage=providers.Factory(Mock),
-    )
-
-    replay_storage_selector = providers.Selector(
-        config.replay_recorder.save_to,
-        google_cloud_storage=replay_storage,
-        local_file_storage=providers.Factory(Mock),
-    )
-
-    replay_streaming_storage_selector = providers.Selector(
-        config.replay_recorder.save_to,
-        google_cloud_storage=replay_streaming_storage,
-        local_file_storage=providers.Factory(Mock),
-    )
-
     replay_recorder = providers.Factory(
         dynamic_import,
         game=config.game.name,
@@ -189,15 +147,10 @@ class Container(containers.DeclarativeContainer):
         max_replays_per_run=config.replay_recorder.max_replays_per_run,
         stop_after_duplicate_replays=config.replay_recorder.stop_after_duplicate_replays,
         skip_recording=config.replay_recorder.skip_recording,
-        save_to=config.replay_recorder.save_to,
         separate_round=config.replay_recorder.separate_round,
         replay_analyzer_factory=replay_analyzer.provider,
         game_window_helper=game_window_helper,
-        replay_dataset=replay_dataset_selector,
-        replay_storage=replay_storage_selector,
-        replay_streaming_storage=replay_streaming_storage_selector,
         cloud_run=cloud_run,
-        transcode_to_hls=config.replay_recorder.transcode_to_hls,
         local_file_storage_dir=config.replay_recorder.local_file_storage_dir,
     )
 
