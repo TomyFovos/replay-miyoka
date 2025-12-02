@@ -213,7 +213,9 @@ class ReplayRecorder(ReplayRecorderBase):
                     pydirectinput.press("f")  # Enter the text box
                     time.sleep(2)
                     # Clear existing text before input
-                    pydirectinput.hotkey("ctrl", "a")
+                    pydirectinput.keyDown("ctrl")
+                    pydirectinput.press("a")
+                    pydirectinput.keyUp("ctrl")
                     pydirectinput.press("delete")
                     self.logger.info(
                         f"Setting user code {self.replay_search_user_code}"
@@ -226,7 +228,9 @@ class ReplayRecorder(ReplayRecorderBase):
                     pydirectinput.press("f")  # Enter the text box
                     time.sleep(2)
                     # Clear existing text before input
-                    pydirectinput.hotkey("ctrl", "a")
+                    pydirectinput.keyDown("ctrl")
+                    pydirectinput.press("a")
+                    pydirectinput.keyUp("ctrl")
                     pydirectinput.press("delete")
                     self.logger.info(
                         f"Setting replay ID {self.replay_search_replay_id}"
@@ -355,16 +359,11 @@ class ReplayRecorder(ReplayRecorderBase):
         if not self.current_replay_id:
             return False
 
-        if self.save_to == "google_cloud_storage":
-            if self.replay_dataset.is_exists(self.current_replay_id):
-                self.logger.warn(f"Replay {self.current_replay_id} already exists")
-                return True
-        elif self.save_to == "local_file_storage":
-            filename = self._local_replay_file_name()
+        filename = self._local_replay_file_name()
 
-            if os.path.exists(os.path.join(self._local_replay_dir(), filename)):
-                self.logger.warn(f"Replay {filename} already exists")
-                return True
+        if os.path.exists(os.path.join(self._local_replay_dir(), filename)):
+            self.logger.warn(f"Replay {filename} already exists")
+            return True
             
         return False
 
