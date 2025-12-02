@@ -221,6 +221,9 @@ class ReplayRecorder(ReplayRecorderBase):
                 case "DialogUserCode":
                     pydirectinput.press("f")  # Enter the text box
                     time.sleep(2)
+                    # Clear existing text before input
+                    pydirectinput.hotkey("ctrl", "a")
+                    pydirectinput.press("delete")
                     self.logger.info(
                         f"Setting user code {self.replay_search_user_code}"
                     )
@@ -231,6 +234,9 @@ class ReplayRecorder(ReplayRecorderBase):
                 case "DialogReplayId":
                     pydirectinput.press("f")  # Enter the text box
                     time.sleep(2)
+                    # Clear existing text before input
+                    pydirectinput.hotkey("ctrl", "a")
+                    pydirectinput.press("delete")
                     self.logger.info(
                         f"Setting replay ID {self.replay_search_replay_id}"
                     )
