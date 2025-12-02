@@ -7,11 +7,8 @@ import re
 import shutil
 import cv2 as cv
 from typing import Optional
-from dependency_injector.providers import Factory
 from datetime import datetime, timezone
 from miyoka.libs.utils import cleanup_dir
-from miyoka.libs.replay_analyzer import ReplayAnalyzer
-from miyoka.libs.cloud_run import CloudRun
 from miyoka.libs.replay_recorder import ReplayRecorder as ReplayRecorderBase
 from miyoka.libs.game_window_helper import WIDTH_1280, HEIGHT_720
 from miyoka.sf6.game_window_helper import (
@@ -35,9 +32,6 @@ class ReplayRecorder(ReplayRecorderBase):
         self,
         logger: Logger,
         game_window_helper: GameWindowHelper,
-        analyzer_operation_mode: bool,
-        replay_analyzer_factory: Factory[ReplayAnalyzer],
-        cloud_run: CloudRun,
         replay_search_players: Optional[list[dict[str, str]]] = None,
         replay_search_replay_ids: Optional[list[str]] = None,
         max_replays_per_run: Optional[int] = None,
@@ -52,9 +46,6 @@ class ReplayRecorder(ReplayRecorderBase):
         self.game_window_helper = game_window_helper
         self.replay_search_players = replay_search_players
         self.replay_search_replay_ids = replay_search_replay_ids
-        self.analyzer_operation_mode = analyzer_operation_mode
-        self.replay_analyzer_factory = replay_analyzer_factory
-        self.cloud_run = cloud_run
         self.max_replays_per_run = max_replays_per_run
         self.stop_after_duplicate_replays = stop_after_duplicate_replays
         self.skip_recording = skip_recording
@@ -300,24 +291,6 @@ class ReplayRecorder(ReplayRecorderBase):
                     self.in_replay = False
                     g_repeat_mode = False
                     self.replay_done = True
-
-                    if self.analyzer_operation_mode == "schedule":
-                        # Analyze asynchronously so the uploading iteration is not blocked.
-                        self.cloud_run.schedule_analyze_in_background(
-                            self.current_replay_id,
-                            initial_delay_sec=30,  # Wait for 30 seconds before scheduling job, becuase uploading the last round video might have not beend uploaded yet.
-                        )
-                    elif self.analyzer_operation_mode == "inline":
-                        replay_analyzer: ReplayAnalyzer = self.replay_analyzer_factory(
-                            replay_id=self.current_replay_id
-                        )
-                        replay_analyzer.run()
-                    elif self.analyzer_operation_mode == "skip":
-                        self.logger.info(f"screen: {screen}")
-                    else:
-                        raise Exception(
-                            f"Unknown analyzer_operation_mode: {self.analyzer_operation_mode}"
-                        )
 
                     pydirectinput.press("s")  # Down
                     pydirectinput.press("f")  # Confirm - End replay
