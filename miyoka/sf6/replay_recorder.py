@@ -14,10 +14,6 @@ from miyoka.libs.game_window_helper import WIDTH_1280, HEIGHT_720
 from miyoka.sf6.game_window_helper import (
     GameWindowHelper,
 )
-from miyoka.sf6.constants import (
-    get_nth_character_combination,
-    replay_select_character_position,
-)
 import traceback
 import threading
 import pathlib
@@ -367,16 +363,6 @@ class ReplayRecorder(ReplayRecorderBase):
             
         return False
 
-    def insert_replay_dataset(
-        self,
-        replay_id: str,
-        metadata: dict,
-    ):
-        self.replay_dataset.insert(
-            replay_id,
-            metadata=metadata,
-        )
-        
     def save_replay_locally(
         self,
         recording_path: str,

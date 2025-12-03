@@ -1,6 +1,5 @@
 import cv2 as cv
 from miyoka.libs.game_window_helper import GameWindowHelper as GameWindowHelperBase
-from datetime import datetime
 import urllib.parse
 
 
@@ -113,26 +112,3 @@ class GameWindowHelper(GameWindowHelperBase):
         name = self.detect_text(f"last_images/identify_replay_id/image.jpeg")
 
         return urllib.parse.quote_plus(name)
-
-    def identify_played_at(self, image):
-        roi = (858, 108, 120, 20)
-
-        (x, y, width, height) = roi
-        cropped_image = image[y : y + height, x : x + width]
-
-        self.save_image(cropped_image, f"last_images/identify_played_at/image.jpeg")
-
-        detected_played_at = self.detect_text(
-            f"last_images/identify_played_at/image.jpeg"
-        )
-
-        try:
-            played_at = detected_played_at.replace("-", "").strip()
-            played_at = datetime.strptime(played_at, "%m/%d/%Y %H:%M")
-        except Exception as e:
-            self.logger.error(
-                f"failed to identify played_at. detected_played_at: {detected_played_at}"
-            )
-            played_at = None
-
-        return played_at

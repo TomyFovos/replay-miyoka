@@ -11,10 +11,6 @@ from miyoka.libs.screen_customizer import ScreenCustomizer as ScreenCustomizerBa
 from miyoka.sf6.game_window_helper import (
     GameWindowHelper,
 )
-from miyoka.sf6.constants import (
-    get_nth_character_combination,
-    replay_select_character_position,
-)
 
 pydirectinput.FAILSAFE = False
 
