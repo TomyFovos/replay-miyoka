@@ -1,39 +1,39 @@
-# Code of Conduct
+# 行動規範
 
-## Legal
+## 法的遵守
 
-While Miyoka aims to enhance the FGC experience, we emphasize the importance of adhering to legal and ethical standards. Before hosting a Miyoka server, you **MUST** ensure the following:
+Miyoka は格闘ゲームコミュニティの体験向上を目的としていますが、前提として関係法令および一般的な倫理観に従う必要があります。Miyoka サーバーをホストする前に、必ず次の点を確認してください。
 
-- Review and comply with the End-User License Agreement (EULA), Terms of Use (ToU), and Terms of Service (ToS) provided by the game publisher or developer. If any Miyoka functionalities are prohibited, you cannot use them.
-- Do **NOT** attack or humiliate any specific player. Replays typically involve two players—Player 1 and Player 2. Personally Identifiable Information (PII), such as player names, must be redacted unless explicit permission is obtained.
+- ゲームパブリッシャー／開発元が提供する EULA（エンドユーザーライセンス契約）、利用規約、サービス規約を精読し、順守すること。もし Miyoka の機能の一部が禁止されている場合、その機能は使用しないでください。
+- 特定のプレイヤーを攻撃したり侮辱したりしないこと。リプレイには通常 2 名（Player 1 と Player 2）が登場し、プレイヤー名などの個人情報は、明確な許可を得ない限り必ずマスキングしてください。
 
-We are **NOT** responsible for any damages or legal actions that may arise from your use of Miyoka. We cannot provide legal advice. Use Miyoka at your own risk.
+Miyoka の利用に起因して生じた損害や紛争について、運営側は一切の責任を負いません。また、法的な助言を行うこともできません。各自の責任においてご利用ください。
 
-## Street Fighter 6
+## ストリートファイター6に関して
 
-**FGC Replay Miyoka** (Miyoka) is a community-driven platform dedicated to providing educational insights through replay footage from Street Fighter 6, captured from the Capcom Fighters Network (CFN).
+**FGC Replay Miyoka**（Miyoka）は、Capcom Fighters Network（CFN）から取得したストリートファイター6のリプレイ映像をもとに、教育的な知見を共有するコミュニティ主導のプラットフォームです。
 
-**Please note that this service is NOT affiliated with Capcom Co., Ltd. (“Capcom”). It is a completely fan-created initiative.**
+**このサービスはカプコン株式会社（以下、カプコン）とは一切関係のないファンメイドプロジェクトです。**
 
-To clarify the purpose of our website, below is a summary of our practices:
+本サイトの目的を明確にするため、取り組み内容を以下にまとめます。
 
-**What We Do:**
+**行っていること**
 
-- Record and upload Street Fighter 6 replay footage, accompanied by analytical insights for educational purposes. (Reference: [Capcom Video Policy](https://www.capcomusa.com/video-policy/) - I. GUIDELINES)
-- Redact Personally Identifiable Information (PII), such as player names, within the replay footage.
+- ストリートファイター6のリプレイ映像を録画・アップロードし、教育目的で分析結果を付して公開します（参考: [Capcom Video Policy](https://www.capcomusa.com/video-policy/) - I. GUIDELINES）。
+- リプレイ映像に含まれるプレイヤー名などの個人情報は削除します。
 
-**What We Do NOT Do:**
+**行っていないこと**
 
-- Engage in commercialization, including generating ad revenue. (Reference: [Capcom Video Policy](https://www.capcomusa.com/video-policy/) - II. NO COMMERCIALIZATION)
-- Use or upload content in an unauthorized or inappropriate manner. (Reference: [Capcom Video Policy](https://www.capcomusa.com/video-policy/) - III. IMPERMISSIBLE USES)
-- Upload prohibited tournament footage (e.g., [Notice Regarding the Use of Footage from the Street Fighter League: Pro-JP 2024](https://sf.esports.capcom.com/news/51770/))
-- Collaborate with cheaters, directly or indirectly.
-- Violate the [COMMUNITY CODE OF ONLINE CONDUCT](https://www.streetfighter.com/6/eula/steam/en/), including activities such as hacking or reverse engineering the software.
+- 広告収益などの商用利用（参考: [Capcom Video Policy](https://www.capcomusa.com/video-policy/) - II. NO COMMERCIALIZATION）。
+- Capcom の許諾なく不適切な形でコンテンツを利用／アップロードする行為（参考: 同 - III. IMPERMISSIBLE USES）。
+- 禁止されている大会映像のアップロード（例: [ストリートファイターリーグ: Pro-JP 2024 映像利用に関する告知](https://sf.esports.capcom.com/news/51770/)）。
+- チーターとの直接・間接的な協力。
+- [COMMUNITY CODE OF ONLINE CONDUCT](https://www.streetfighter.com/6/eula/steam/en/) に違反する行為（ソフトのハッキングやリバースエンジニアリング等）。
 
-For legal references, please refer to the following links provided by Capcom:
+法的な参照情報として、カプコンが提供する以下のリンクをご確認ください。
 
 - [End User License Agreement and Terms of Service](https://www.streetfighter.com/6/eula/steam/en/)
 - [Capcom Video Policy](https://www.capcomusa.com/video-policy/)
 - [End User License Agreement](https://game.capcom.com/eula/eng.html)
 
-While we make every effort to comply with these guidelines, if you find any content on this website that you believe to be harmful, illegal, offensive, or unethical, please contact us.
+私たちはこれらのガイドラインを遵守するよう最善を尽くしていますが、もし本サイト上のコンテンツに問題（違法性、攻撃性、倫理面など）を感じた場合は、お知らせください。

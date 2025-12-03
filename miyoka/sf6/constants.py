@@ -1,19 +1,5 @@
 from itertools import combinations
 
-ARROWS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-CLASSIC_INPUTS = [
-    "lp",
-    "mp",
-    "hp",
-    "lk",
-    "mk",
-    "hk",  # Classic
-]
-MODERN_INPUTS = ["la", "sp", "dp", "ma", "ha", "auto", "di", "grab"]  # Modern
-
-ACTION_LABEL = 100
-NON_ACTION_LABEL = 0
-
 characters = [
     "luke",
     "jamie",
@@ -80,25 +66,3 @@ def get_nth_character_combination(n):
     comb = get_all_character_combinations()
     n = n % len(comb)
     return comb[n]
-
-
-def invert_arrow(input):
-    """
-    7 8 9
-    4 5 6
-    1 2 3
-    """
-    if "1" in input:
-        return input.replace("1", "3")
-    elif "3" in input:
-        return input.replace("3", "1")
-    elif "4" in input:
-        return input.replace("4", "6")
-    elif "6" in input:
-        return input.replace("6", "4")
-    elif "7" in input:
-        return input.replace("7", "9")
-    elif "9" in input:
-        return input.replace("9", "7")
-    else:
-        return input
