@@ -26,7 +26,8 @@ class GameWindowHelper:
         self.window_name = window_name
         self.extra = extra
         self.margin = margin
-        self._screen_language = DEFAULT_SCREEN_LANGUAGE
+        # Use language from config if available, otherwise fallback to default
+        self._screen_language = extra.get("original_language", DEFAULT_SCREEN_LANGUAGE) if extra else DEFAULT_SCREEN_LANGUAGE
 
     def init_camera(self):
         self.camera = dxcam.create(
