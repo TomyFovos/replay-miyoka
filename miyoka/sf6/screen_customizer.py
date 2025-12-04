@@ -11,10 +11,6 @@ from miyoka.libs.screen_customizer import ScreenCustomizer as ScreenCustomizerBa
 from miyoka.sf6.game_window_helper import (
     GameWindowHelper,
 )
-from miyoka.sf6.constants import (
-    get_nth_character_combination,
-    replay_select_character_position,
-)
 
 pydirectinput.FAILSAFE = False
 
@@ -45,6 +41,8 @@ class ScreenCustomizer(ScreenCustomizerBase):
         is_quality_changed = False
         is_borderless_windowed_changed = False
         is_language_changed = False
+        pending_navigation_to_graphics = False
+        pending_navigation_to_graphics = False
 
         while True:
             frame = self.game_window_helper.grab_frame()
@@ -59,6 +57,21 @@ class ScreenCustomizer(ScreenCustomizerBase):
             ):
                 self.logger.info(f"Changing screen complete!")
                 break
+
+            if pending_navigation_to_graphics:
+                pydirectinput.press("e")  # Right - Back to Graphics
+                pending_navigation_to_graphics = False
+                time.sleep(1)
+                continue
+
+            if (
+                not is_language_changed
+                and isinstance(screen, str)
+                and screen.startswith("OptionsGraphics")
+            ):
+                pydirectinput.press("q")  # Left - Continue toward Language tab
+                time.sleep(1)
+                continue
 
             match screen:
                 case "TitleScreen":
@@ -75,7 +88,16 @@ class ScreenCustomizer(ScreenCustomizerBase):
                 case "MultiOptions":
                     pydirectinput.press("f")  # Enter
                 case "OptionsGame":
-                    pydirectinput.press("q")  # Left
+                    if is_language_changed:
+                        pydirectinput.press("q")  # Left - To Graphics
+                    else:
+                        pydirectinput.press("q")  # Left - To Graphics
+                        time.sleep(1)
+                        pydirectinput.press("q")  # Left again - To Language
+                case "OptionsGraphicsBasicDisplaySettings":
+                    pydirectinput.press("s")  # Down
+                case "OptionsGraphicsScreenBrightness":
+                    pydirectinput.press("s")  # Down
                 case "OptionsGraphicsQualityLowest":
                     is_quality_changed = True
                     pydirectinput.press("s")  # Down
@@ -107,11 +129,15 @@ class ScreenCustomizer(ScreenCustomizerBase):
                 case "OptionsGraphicsBasicGraphicSettingsDisplayModeWindowed":
                     is_borderless_windowed_changed = True
                     pydirectinput.press("ESC")  # Exit
-                    pydirectinput.press("q")  # Left - To Language
+                    # Stay on Graphics tab; language handled earlier
                 case "OptionsLanguageDisplayLanguageEnglish":
-                    is_language_changed = True
-                    pydirectinput.press("ESC")  # Exit
-                    pydirectinput.press("ESC")  # Exit
+                    if not is_language_changed:
+                        is_language_changed = True
+                        pydirectinput.press("ESC")  # Exit
+                        pydirectinput.press("ESC")  # Exit
+                        pending_navigation_to_graphics = True
+                    else:
+                        pydirectinput.press("e")  # Right - Back to Graphics
                 case "ErrorCommunication" | "ErrorCommunication2":
                     pydirectinput.press("f")  # OK - Close dialog
                 case "MainFg":
@@ -162,6 +188,21 @@ class ScreenCustomizer(ScreenCustomizerBase):
 
                 break
 
+            if pending_navigation_to_graphics:
+                pydirectinput.press("e")  # Right - Back to Graphics tab
+                pending_navigation_to_graphics = False
+                time.sleep(1)
+                continue
+
+            if (
+                not is_language_changed
+                and isinstance(screen, str)
+                and screen.startswith("OptionsGraphics")
+            ):
+                pydirectinput.press("q")  # Left - Move toward Language tab first
+                time.sleep(1)
+                continue
+
             match screen:
                 case "TitleScreen":
                     pydirectinput.press("Tab")  # Press Any Button
@@ -178,6 +219,9 @@ class ScreenCustomizer(ScreenCustomizerBase):
                     pydirectinput.press("f")  # Enter
                 case "OptionsGame":
                     pydirectinput.press("q")  # Left
+                    if not is_language_changed:
+                        time.sleep(1)
+                        pydirectinput.press("q")  # Left again - To Language
                 case "OptionsGraphicsQualityLowest":
                     if self.game_window_helper.get_original_quality() == "Lowest":
                         pydirectinput.press("s")  # Down
@@ -232,7 +276,6 @@ class ScreenCustomizer(ScreenCustomizerBase):
                         == "Windowed"
                     ):
                         pydirectinput.press("ESC")  # Exit
-                        pydirectinput.press("q")  # Left - To Language
                         is_borderless_windowed_changed = True
                     else:
                         pydirectinput.press("d")  # Right
@@ -244,26 +287,34 @@ class ScreenCustomizer(ScreenCustomizerBase):
                         == "BorderlessWindowed"
                     ):
                         pydirectinput.press("ESC")  # Exit
-                        pydirectinput.press("q")  # Left - To Language
                         is_borderless_windowed_changed = True
                     else:
                         pydirectinput.press("d")  # Right
 
                     self.game_window_helper.update_game_window_size()
                 case "OptionsLanguageDisplayLanguageEnglish":
-                    if self.game_window_helper.get_original_language() == "en":
-                        time.sleep(3)
-                        pydirectinput.press("ESC")  # Exit
-                        pydirectinput.press("ESC")  # Exit
-                        is_language_changed = True
+                    if not is_language_changed:
+                        if self.game_window_helper.get_original_language() == "en":
+                            time.sleep(3)
+                            pydirectinput.press("ESC")  # Exit
+                            pydirectinput.press("ESC")  # Exit
+                            is_language_changed = True
+                            pending_navigation_to_graphics = True
+                        else:
+                            pydirectinput.press("f")  # Enter - To select Language
                     else:
-                        pydirectinput.press("f")  # Enter - To select Language
+                        pydirectinput.press("e")  # Right - Back to Graphics
                 case "OptionsLanguageDisplayLanguageJapanese":
-                    if self.game_window_helper.get_original_language() == "jp":
-                        pydirectinput.press("ESC")  # Exit
-                        pydirectinput.press("ESC")  # Exit
+                    if not is_language_changed:
+                        if self.game_window_helper.get_original_language() == "jp":
+                            pydirectinput.press("ESC")  # Exit
+                            pydirectinput.press("ESC")  # Exit
+                            is_language_changed = True
+                            pending_navigation_to_graphics = True
+                        else:
+                            pydirectinput.press("f")  # Enter - To select Language
                     else:
-                        pydirectinput.press("f")  # Enter - To select Language
+                        pydirectinput.press("e")  # Right - Back to Graphics
                 case "OptionsLanguageDisplayLanguageSelectEnglish":
                     pass  # TODO:
                 case "ErrorCommunication" | "ErrorCommunication2":

@@ -27,6 +27,7 @@ game:
   #  - ABCDXQPDH
   #  - CBADXQPDH
   extra:
+    # Language setting for template matching. Supported values: en, jp
     original_language: en
     original_quality: Normal
     original_display_mode: Windowed

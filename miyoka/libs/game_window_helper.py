@@ -1,7 +1,6 @@
 import time
 import os
 import cv2 as cv
-import numpy as np
 import pathlib
 from logging import Logger
 from miyoka.libs.utils import retry
@@ -27,7 +26,8 @@ class GameWindowHelper:
         self.window_name = window_name
         self.extra = extra
         self.margin = margin
-        self._screen_language = DEFAULT_SCREEN_LANGUAGE
+        # Use language from config if available, otherwise fallback to default
+        self._screen_language = extra.get("original_language", DEFAULT_SCREEN_LANGUAGE) if extra else DEFAULT_SCREEN_LANGUAGE
 
     def init_camera(self):
         self.camera = dxcam.create(
@@ -187,41 +187,12 @@ class GameWindowHelper:
 
         return template_files
 
-    def mirror_p2_roi_from(self, p1_roi):
-        (x, y, width, height) = p1_roi
-        return (self._current_screen_width - (x + width), y, width, height)
-
     def detect(self, image, template, method=cv.TM_CCOEFF_NORMED):
         w, h = template.shape[::-1]
         res = cv.matchTemplate(image, template, method)
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
         (x, y) = max_loc
         return max_val, (x, y, w, h)
-
-    def detect_multi(self, image, template, threthold, method=cv.TM_CCOEFF_NORMED):
-        w, h = template.shape[::-1]
-
-        res = cv.matchTemplate(image, template, method)
-        loc = np.where(res >= threthold)
-
-        areas = []
-        for pt in zip(*loc[::-1]):
-            x = pt[0]
-            y = pt[1]
-            width = w
-            height = h
-            areas.append([x, y, width, height])
-
-        return areas
-
-    def mse(self, img1, img2):
-        img1 = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
-        img2 = cv.cvtColor(img2, cv.COLOR_BGR2GRAY)
-        h, w = img1.shape
-        diff = cv.subtract(img1, img2)
-        err = np.sum(diff**2)
-        mse = err / (float(h * w))
-        return mse
 
     @retry(max_retries=3, delay=2)
     def detect_text(self, path):
