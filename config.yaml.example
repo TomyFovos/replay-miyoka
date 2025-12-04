@@ -12,9 +12,15 @@ game:
     # `name`: Name of the player displayed in replay viewer.
     # `id`: Identifier of the player in the game. Replay Uploader crawls replays associated with the ID in the game.
     # `pattern`: Pattern of the player name in the game. This is used to filter the replay dataset for each player.
-    - name: "Player1"
-      id: "1234567890"
-      pattern: "Player1"
+    - name: "Fovos"
+      id: "1068275383"
+      pattern: "Fovos"
+    - name: "友達A"
+      id: "9876543210"
+      pattern: "FriendA"
+    - name: "友達B"
+      id: "1111222233"
+      pattern: "FriendB"
   # Alternatively, you can specify Replay IDs to be recorded.
   # In this case, `players` above will be ignored.
   # replay_ids:
