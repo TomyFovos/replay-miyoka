@@ -169,8 +169,12 @@ class GameWindowHelper:
             right = left + WIDTH_1280
             width = WIDTH_1280
         if height > HEIGHT_720 and height < HEIGHT_720 + self.margin:
-            titlebar_and_border = height - HEIGHT_720
-            top = top + titlebar_and_border
+            # タイトルバー（上）とボーダー（下）を分けて調整
+            # 一般的なWindows: タイトルバー ~31px, 下ボーダー ~8px
+            total_extra = height - HEIGHT_720
+            border_bottom = 8  # 下ボーダーの推定値
+            titlebar_top = total_extra - border_bottom
+            top = top + titlebar_top
             height = HEIGHT_720
             bottom = top + height
         

@@ -85,7 +85,7 @@ class GameWindowHelper(GameWindowHelperBase):
         return detected, roi
 
     def identify_replay_id(self, image):
-        roi = (273, 123, 90, 23)
+        roi = (260, 90, 100, 25)
 
         (x, y, width, height) = roi
         cropped_image = image[y : y + height, x : x + width]
