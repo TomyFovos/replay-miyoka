@@ -159,6 +159,21 @@ class GameWindowHelper:
         bottom = game_window.bottom
         width = game_window.right - game_window.left
         height = game_window.bottom - game_window.top
+        
+        # Adjust for window borders/titlebar to get client area
+        # Windows typically adds ~8px border on each side and ~31px titlebar
+        # We normalize to standard resolutions
+        if width > WIDTH_1280 and width < WIDTH_1280 + self.margin:
+            border_x = (width - WIDTH_1280) // 2
+            left = left + border_x
+            right = left + WIDTH_1280
+            width = WIDTH_1280
+        if height > HEIGHT_720 and height < HEIGHT_720 + self.margin:
+            titlebar_and_border = height - HEIGHT_720
+            top = top + titlebar_and_border
+            height = HEIGHT_720
+            bottom = top + height
+        
         region = (left, top, right, bottom)
         size = (width, height)
         self.logger.info(
@@ -189,6 +204,12 @@ class GameWindowHelper:
 
     def detect(self, image, template, method=cv.TM_CCOEFF_NORMED):
         w, h = template.shape[::-1]
+        img_h, img_w = image.shape[:2]
+        
+        # Skip if template is larger than image
+        if w > img_w or h > img_h:
+            return 0, (0, 0, w, h)
+        
         res = cv.matchTemplate(image, template, method)
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
         (x, y) = max_loc

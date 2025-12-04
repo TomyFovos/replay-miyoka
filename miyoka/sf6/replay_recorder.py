@@ -114,7 +114,7 @@ class ReplayRecorder(ReplayRecorderBase):
             text=True,
         )
         recording_path_search = re.search(
-            'Result: Ok\("(.*)"\)', ret.stdout
+            r'Result: Ok\("(.*)"\)', ret.stdout
         )
 
         try:
