@@ -189,10 +189,6 @@ class ReplayRecorder(ReplayRecorderBase):
                 case "CfnReplays":
                     pydirectinput.press("f")  # Enter
                     time.sleep(2)
-                case "ReplaysRecommended":
-                    pydirectinput.press("q")  # Left
-                case "ReplaysConditionalSearch":
-                    pydirectinput.press("c")  # Right
                 case "KeywordSearchByPlayerName":
                     pydirectinput.press("s")  # Down in submenu
                 case "KeywordSearchByUserCode":
