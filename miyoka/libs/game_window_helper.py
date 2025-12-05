@@ -1,17 +1,24 @@
+"""
+Game window helper for screen capture and window management.
+Uses platform abstraction layer for cross-platform support.
+"""
 import time
 import os
 import cv2 as cv
 import pathlib
 from logging import Logger
+from typing import Optional
 from miyoka.libs.utils import retry
 import pytesseract
 from PIL import Image
 
-try:
-    import dxcam
-    import pygetwindow as gw
-except (ImportError, NotImplementedError) as e:
-    print("WARN: dxcam and pygetwindow are supported in Windows only.")
+# Platform abstraction imports
+from miyoka.libs.platform import (
+    get_screen_capture,
+    get_window_manager,
+    get_process_manager,
+)
+from miyoka.libs.platform.base import ScreenCapture, WindowManager, WindowInfo
 
 WIDTH_1280 = 1280
 WIDTH_1920 = 1920
@@ -21,6 +28,11 @@ DEFAULT_SCREEN_LANGUAGE = "en"
 
 
 class GameWindowHelper:
+    """
+    Helper class for game window management and screen capture.
+    Supports both Windows and Linux platforms.
+    """
+    
     def __init__(self, logger: Logger, window_name: str, extra: dict, margin: int = 50):
         self.logger = logger
         self.window_name = window_name
@@ -28,29 +40,50 @@ class GameWindowHelper:
         self.margin = margin
         # Use language from config if available, otherwise fallback to default
         self._screen_language = extra.get("original_language", DEFAULT_SCREEN_LANGUAGE) if extra else DEFAULT_SCREEN_LANGUAGE
+        
+        # Platform abstraction components (lazy initialization)
+        self._screen_capture: Optional[ScreenCapture] = None
+        self._window_manager: Optional[WindowManager] = None
+        self._current_window: Optional[WindowInfo] = None
+        self.current_screen_region = None
+        self._current_screen_width = 0
+        self._current_screen_height = 0
+
+    def _get_screen_capture(self) -> ScreenCapture:
+        """Get or create screen capture instance."""
+        if self._screen_capture is None:
+            self._screen_capture = get_screen_capture()
+        return self._screen_capture
+    
+    def _get_window_manager(self) -> WindowManager:
+        """Get or create window manager instance."""
+        if self._window_manager is None:
+            self._window_manager = get_window_manager()
+        return self._window_manager
 
     def init_camera(self):
-        self.camera = dxcam.create(
-            output_idx=0, output_color="BGR"
-        )  # returns a DXCamera instance on primary monitor
+        """Initialize screen capture."""
+        screen_capture = self._get_screen_capture()
+        screen_capture.initialize(monitor_index=0)
 
     def grab_frame(self):
+        """Capture current frame from screen."""
+        screen_capture = self._get_screen_capture()
         frame = None
 
         if not self.current_screen_region:
-            ValueError(
+            raise ValueError(
                 "Region is not set. Please call update_game_window_size() first."
             )
 
         while True:
             try:
-                frame = self.camera.grab(region=self.current_screen_region)  # region
+                frame = screen_capture.grab(region=self.current_screen_region)
             except ValueError:
-                frame = (
-                    self.camera.grab()
-                )  # Fallback to entire screen when the window does not fit within the screen.
-                self.logger.warn(
-                    f"Fallback to entire screen when the window does not fit within the screen. self.current_screen_region: {self.current_screen_region}"
+                frame = screen_capture.grab()  # Fallback to entire screen
+                self.logger.warning(
+                    f"Fallback to entire screen when the window does not fit within the screen. "
+                    f"current_screen_region: {self.current_screen_region}"
                 )
 
             if frame is not None:
@@ -63,35 +96,50 @@ class GameWindowHelper:
         return frame
 
     def wait_until_game_launched(self):
-        # Activate the game window
+        """Wait until game window is found."""
         while True:
             try:
                 self.get_game_window()
                 break
-            except:
+            except Exception:
                 print(
                     f"Failed to find the game screen. Please make sure the game is running."
                 )
                 time.sleep(1)
 
-    def get_game_window(self):
-        return gw.getWindowsWithTitle(self.window_name)[0]
+    def get_game_window(self) -> WindowInfo:
+        """Get game window info."""
+        wm = self._get_window_manager()
+        window = wm.find_window(self.window_name)
+        if window is None:
+            raise ValueError(f"Window not found: {self.window_name}")
+        self._current_window = window
+        return window
 
     def wait_until_game_focused(self):
-        game_window = self.get_game_window()
+        """Wait until game window is focused."""
+        wm = self._get_window_manager()
+        window = self.get_game_window()
+        
         try:
-            game_window.activate()
-            game_window.moveTo(0, 0)
+            wm.activate_window(window)
+            wm.move_window(window, 0, 0)
         except Exception as e:
             self.logger.error(f"Failed to activate window. {e}")
 
         # Wait for the window to be focused
-        while not game_window.isActive:
+        max_wait = 10  # seconds
+        start_time = time.time()
+        while time.time() - start_time < max_wait:
+            if wm.is_window_active(window):
+                break
             time.sleep(0.1)
 
     def ensure_obs(self):
-        window_list = gw.getWindowsWithTitle("OBS")
-        if len(window_list) == 0:
+        """Ensure OBS is running."""
+        wm = self._get_window_manager()
+        windows = wm.find_windows("OBS")
+        if len(windows) == 0:
             raise ValueError("OBS window not found. Did you start OBS?")
 
     @property
@@ -152,17 +200,18 @@ class GameWindowHelper:
         self._screen_language = language
 
     def update_game_window_size(self):
-        game_window = self.get_game_window()
-        top = game_window.top
-        left = game_window.left
-        right = game_window.right
-        bottom = game_window.bottom
-        width = game_window.right - game_window.left
-        height = game_window.bottom - game_window.top
+        """Update game window size and region."""
+        wm = self._get_window_manager()
+        window = self.get_game_window()
+        
+        # Get current window rect
+        left, top, right, bottom = wm.get_window_rect(window)
+        width = right - left
+        height = bottom - top
         
         # Adjust for window borders/titlebar to get client area
         # Windows typically adds ~8px border on each side and ~31px titlebar
-        # We normalize to standard resolutions
+        # Linux with X11 may have different decoration sizes
         if width > WIDTH_1280 and width < WIDTH_1280 + self.margin:
             border_x = (width - WIDTH_1280) // 2
             left = left + border_x
@@ -170,7 +219,6 @@ class GameWindowHelper:
             width = WIDTH_1280
         if height > HEIGHT_720 and height < HEIGHT_720 + self.margin:
             # タイトルバー（上）とボーダー（下）を分けて調整
-            # 一般的なWindows: タイトルバー ~31px, 下ボーダー ~8px
             total_extra = height - HEIGHT_720
             border_bottom = 8  # 下ボーダーの推定値
             titlebar_top = total_extra - border_bottom
@@ -179,7 +227,6 @@ class GameWindowHelper:
             bottom = top + height
         
         region = (left, top, right, bottom)
-        size = (width, height)
         self.logger.info(
             f"top: {top}, left: {left}, right: {right}, bottom: {bottom}, width: {width}, height: {height}"
         )
@@ -243,3 +290,9 @@ class GameWindowHelper:
         )
 
         return text.strip()
+    
+    def release(self):
+        """Release resources."""
+        if self._screen_capture:
+            self._screen_capture.release()
+            self._screen_capture = None

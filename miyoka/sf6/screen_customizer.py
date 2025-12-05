@@ -1,18 +1,19 @@
+"""SF6 Screen Customizer - Adjusts game settings for replay recording.
+Refactored to use platform abstraction layer for cross-platform support.
+"""
 from logging import Logger
 import os
 import json
 import time
-import pydirectinput
-import subprocess
 import re
 from dependency_injector.providers import Factory
 from datetime import datetime, timezone
 from miyoka.libs.screen_customizer import ScreenCustomizer as ScreenCustomizerBase
+from miyoka.libs.platform import get_input_controller
+from miyoka.libs.platform.base import InputController
 from miyoka.sf6.game_window_helper import (
     GameWindowHelper,
 )
-
-pydirectinput.FAILSAFE = False
 
 __all__ = ["ScreenCustomizer"]
 
@@ -29,6 +30,9 @@ class ScreenCustomizer(ScreenCustomizerBase):
         self.logger = logger
         self.game_window_helper = game_window_helper
         self.exit_to_desktop = exit_to_desktop
+        
+        # Initialize platform-specific input controller
+        self._input: InputController = get_input_controller()
 
     def change(self):
         self.logger.info("Changing screen.....")
@@ -59,7 +63,7 @@ class ScreenCustomizer(ScreenCustomizerBase):
                 break
 
             if pending_navigation_to_graphics:
-                pydirectinput.press("e")  # Right - Back to Graphics
+                self._input.press("e")  # Right - Back to Graphics
                 pending_navigation_to_graphics = False
                 time.sleep(1)
                 continue
@@ -69,79 +73,79 @@ class ScreenCustomizer(ScreenCustomizerBase):
                 and isinstance(screen, str)
                 and screen.startswith("OptionsGraphics")
             ):
-                pydirectinput.press("q")  # Left - Continue toward Language tab
+                self._input.press("q")  # Left - Continue toward Language tab
                 time.sleep(1)
                 continue
 
             match screen:
                 case "TitleScreen":
-                    pydirectinput.press("Tab")  # Press Any Button
+                    self._input.press("Tab")  # Press Any Button
                 case "MainBh":
-                    pydirectinput.press("Tab")  # Open menu
+                    self._input.press("Tab")  # Open menu
                     time.sleep(3)
                 case "News":
-                    pydirectinput.press("ESC")  # Exit from news
+                    self._input.press("ESC")  # Exit from news
                 case "MultiMenuProfile":
-                    pydirectinput.press("s")  # Down
-                    pydirectinput.press("a")  # Left
-                    pydirectinput.press("a")  # Left
+                    self._input.press("s")  # Down
+                    self._input.press("a")  # Left
+                    self._input.press("a")  # Left
                 case "MultiOptions":
-                    pydirectinput.press("f")  # Enter
+                    self._input.press("f")  # Enter
                 case "OptionsGame":
                     if is_language_changed:
-                        pydirectinput.press("q")  # Left - To Graphics
+                        self._input.press("q")  # Left - To Graphics
                     else:
-                        pydirectinput.press("q")  # Left - To Graphics
+                        self._input.press("q")  # Left - To Graphics
                         time.sleep(1)
-                        pydirectinput.press("q")  # Left again - To Language
+                        self._input.press("q")  # Left again - To Language
                 case "OptionsGraphicsBasicDisplaySettings":
-                    pydirectinput.press("s")  # Down
+                    self._input.press("s")  # Down
                 case "OptionsGraphicsScreenBrightness":
-                    pydirectinput.press("s")  # Down
+                    self._input.press("s")  # Down
                 case "OptionsGraphicsQualityLowest":
                     is_quality_changed = True
-                    pydirectinput.press("s")  # Down
+                    self._input.press("s")  # Down
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsQualityLow":
-                    pydirectinput.press("a")  # Left - To Lowest
+                    self._input.press("a")  # Left - To Lowest
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsQualityNormal":
-                    pydirectinput.press("d")  # Left - To Lowest
+                    self._input.press("d")  # Left - To Lowest
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsQualityHigh":
-                    pydirectinput.press("d")  # Right - To Lowest
+                    self._input.press("d")  # Right - To Lowest
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsQualityHighest":
-                    pydirectinput.press("d")  # Right - To Lowest
+                    self._input.press("d")  # Right - To Lowest
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsOutputDisplay":
-                    pydirectinput.press("s")  # Down
+                    self._input.press("s")  # Down
                 case "OptionsGraphicsResolution":
-                    pydirectinput.press("s")  # Down
+                    self._input.press("s")  # Down
                 case "OptionsGraphicsBasicGraphicSettings":
-                    pydirectinput.press("f")  # Enter
-                    pydirectinput.press("s")  # Down
-                    pydirectinput.press("s")  # Down - To Display Mode
+                    self._input.press("f")  # Enter
+                    self._input.press("s")  # Down
+                    self._input.press("s")  # Down - To Display Mode
                 case "OptionsGraphicsBasicGraphicSettingsDisplayModeBorderlessWindowed":
-                    pydirectinput.press("d")  # Right - to Windowed
+                    self._input.press("d")  # Right - to Windowed
                     time.sleep(3)
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsBasicGraphicSettingsDisplayModeWindowed":
                     is_borderless_windowed_changed = True
-                    pydirectinput.press("ESC")  # Exit
+                    self._input.press("ESC")  # Exit
                     # Stay on Graphics tab; language handled earlier
                 case "OptionsLanguageDisplayLanguageEnglish":
                     if not is_language_changed:
                         is_language_changed = True
-                        pydirectinput.press("ESC")  # Exit
-                        pydirectinput.press("ESC")  # Exit
+                        self._input.press("ESC")  # Exit
+                        self._input.press("ESC")  # Exit
                         pending_navigation_to_graphics = True
                     else:
-                        pydirectinput.press("e")  # Right - Back to Graphics
+                        self._input.press("e")  # Right - Back to Graphics
                 case "ErrorCommunication" | "ErrorCommunication2":
-                    pydirectinput.press("f")  # OK - Close dialog
+                    self._input.press("f")  # OK - Close dialog
                 case "MainFg":
-                    pydirectinput.press("a")  # Left
+                    self._input.press("a")  # Left
                 case (
                     "ReplaySummary"
                     | "SearchResults"
@@ -152,7 +156,7 @@ class ScreenCustomizer(ScreenCustomizerBase):
                     | "FightingGroundVersus"
                     | "KeywordSearchByUserCode"
                 ):
-                    pydirectinput.press("ESC")  # Exit
+                    self._input.press("ESC")  # Exit
                 case _:
                     pass
 
@@ -189,7 +193,7 @@ class ScreenCustomizer(ScreenCustomizerBase):
                 break
 
             if pending_navigation_to_graphics:
-                pydirectinput.press("e")  # Right - Back to Graphics tab
+                self._input.press("e")  # Right - Back to Graphics tab
                 pending_navigation_to_graphics = False
                 time.sleep(1)
                 continue
@@ -199,86 +203,86 @@ class ScreenCustomizer(ScreenCustomizerBase):
                 and isinstance(screen, str)
                 and screen.startswith("OptionsGraphics")
             ):
-                pydirectinput.press("q")  # Left - Move toward Language tab first
+                self._input.press("q")  # Left - Move toward Language tab first
                 time.sleep(1)
                 continue
 
             match screen:
                 case "TitleScreen":
-                    pydirectinput.press("Tab")  # Press Any Button
+                    self._input.press("Tab")  # Press Any Button
                 case "MainBh":
-                    pydirectinput.press("Tab")  # Open menu
+                    self._input.press("Tab")  # Open menu
                     time.sleep(3)
                 case "News":
-                    pydirectinput.press("ESC")  # Exit from news
+                    self._input.press("ESC")  # Exit from news
                 case "MultiMenuProfile":
-                    pydirectinput.press("s")  # Down
-                    pydirectinput.press("a")  # Left
-                    pydirectinput.press("a")  # Left
+                    self._input.press("s")  # Down
+                    self._input.press("a")  # Left
+                    self._input.press("a")  # Left
                 case "MultiOptions":
-                    pydirectinput.press("f")  # Enter
+                    self._input.press("f")  # Enter
                 case "OptionsGame":
-                    pydirectinput.press("q")  # Left
+                    self._input.press("q")  # Left
                     if not is_language_changed:
                         time.sleep(1)
-                        pydirectinput.press("q")  # Left again - To Language
+                        self._input.press("q")  # Left again - To Language
                 case "OptionsGraphicsQualityLowest":
                     if self.game_window_helper.get_original_quality() == "Lowest":
-                        pydirectinput.press("s")  # Down
+                        self._input.press("s")  # Down
                         is_quality_changed = True
                     else:
-                        pydirectinput.press("d")  # Right
+                        self._input.press("d")  # Right
 
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsQualityLow":
                     if self.game_window_helper.get_original_quality() == "Low":
-                        pydirectinput.press("s")  # Down
+                        self._input.press("s")  # Down
                         is_quality_changed = True
                     else:
-                        pydirectinput.press("d")  # Right
+                        self._input.press("d")  # Right
 
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsQualityNormal":
                     if self.game_window_helper.get_original_quality() == "Normal":
-                        pydirectinput.press("s")  # Down
+                        self._input.press("s")  # Down
                         is_quality_changed = True
                     else:
-                        pydirectinput.press("d")  # Right
+                        self._input.press("d")  # Right
 
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsQualityHigh":
                     if self.game_window_helper.get_original_quality() == "High":
-                        pydirectinput.press("s")  # Down
+                        self._input.press("s")  # Down
                         is_quality_changed = True
                     else:
-                        pydirectinput.press("d")  # Right
+                        self._input.press("d")  # Right
 
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsQualityHighest":
                     if self.game_window_helper.get_original_quality() == "Highest":
-                        pydirectinput.press("s")  # Down
+                        self._input.press("s")  # Down
                         is_quality_changed = True
                     else:
-                        pydirectinput.press("d")  # Right
+                        self._input.press("d")  # Right
 
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsOutputDisplay":
-                    pydirectinput.press("s")  # Down
+                    self._input.press("s")  # Down
                 case "OptionsGraphicsResolution":
-                    pydirectinput.press("s")  # Down
+                    self._input.press("s")  # Down
                 case "OptionsGraphicsBasicGraphicSettings":
-                    pydirectinput.press("f")  # Enter
-                    pydirectinput.press("s")  # Down
-                    pydirectinput.press("s")  # Down - To Display Mode
+                    self._input.press("f")  # Enter
+                    self._input.press("s")  # Down
+                    self._input.press("s")  # Down - To Display Mode
                 case "OptionsGraphicsBasicGraphicSettingsDisplayModeWindowed":
                     if (
                         self.game_window_helper.get_original_display_mode()
                         == "Windowed"
                     ):
-                        pydirectinput.press("ESC")  # Exit
+                        self._input.press("ESC")  # Exit
                         is_borderless_windowed_changed = True
                     else:
-                        pydirectinput.press("d")  # Right
+                        self._input.press("d")  # Right
 
                     self.game_window_helper.update_game_window_size()
                 case "OptionsGraphicsBasicGraphicSettingsDisplayModeBorderlessWindowed":
@@ -286,39 +290,39 @@ class ScreenCustomizer(ScreenCustomizerBase):
                         self.game_window_helper.get_original_display_mode()
                         == "BorderlessWindowed"
                     ):
-                        pydirectinput.press("ESC")  # Exit
+                        self._input.press("ESC")  # Exit
                         is_borderless_windowed_changed = True
                     else:
-                        pydirectinput.press("d")  # Right
+                        self._input.press("d")  # Right
 
                     self.game_window_helper.update_game_window_size()
                 case "OptionsLanguageDisplayLanguageEnglish":
                     if not is_language_changed:
                         if self.game_window_helper.get_original_language() == "en":
                             time.sleep(3)
-                            pydirectinput.press("ESC")  # Exit
-                            pydirectinput.press("ESC")  # Exit
+                            self._input.press("ESC")  # Exit
+                            self._input.press("ESC")  # Exit
                             is_language_changed = True
                             pending_navigation_to_graphics = True
                         else:
-                            pydirectinput.press("f")  # Enter - To select Language
+                            self._input.press("f")  # Enter - To select Language
                     else:
-                        pydirectinput.press("e")  # Right - Back to Graphics
+                        self._input.press("e")  # Right - Back to Graphics
                 case "OptionsLanguageDisplayLanguageJapanese":
                     if not is_language_changed:
                         if self.game_window_helper.get_original_language() == "jp":
-                            pydirectinput.press("ESC")  # Exit
-                            pydirectinput.press("ESC")  # Exit
+                            self._input.press("ESC")  # Exit
+                            self._input.press("ESC")  # Exit
                             is_language_changed = True
                             pending_navigation_to_graphics = True
                         else:
-                            pydirectinput.press("f")  # Enter - To select Language
+                            self._input.press("f")  # Enter - To select Language
                     else:
-                        pydirectinput.press("e")  # Right - Back to Graphics
+                        self._input.press("e")  # Right - Back to Graphics
                 case "OptionsLanguageDisplayLanguageSelectEnglish":
                     pass  # TODO:
                 case "ErrorCommunication" | "ErrorCommunication2":
-                    pydirectinput.press("f")  # OK - Close dialog
+                    self._input.press("f")  # OK - Close dialog
                 case (
                     "ReplaySummary"
                     | "SearchResults"
@@ -327,7 +331,7 @@ class ScreenCustomizer(ScreenCustomizerBase):
                     | "MultiMenuCfn"
                     | "KeywordSearchByUserCode"
                 ):
-                    pydirectinput.press("ESC")  # Exit
+                    self._input.press("ESC")  # Exit
                 case _:
                     pass
 
@@ -350,20 +354,20 @@ class ScreenCustomizer(ScreenCustomizerBase):
 
             match screen:
                 case "TitleScreen":
-                    pydirectinput.press("Tab")  # Press Any Button
+                    self._input.press("Tab")  # Press Any Button
                 case "MainBh":
-                    pydirectinput.press("Tab")  # Open menu
+                    self._input.press("Tab")  # Open menu
                     time.sleep(3)
                 case "News":
-                    pydirectinput.press("ESC")  # Exit from news
+                    self._input.press("ESC")  # Exit from news
                 case "MultiMenuProfile":
-                    pydirectinput.press("s")  # Down
-                    pydirectinput.press("s")  # Down
+                    self._input.press("s")  # Down
+                    self._input.press("s")  # Down
                 case "MultiMenuExitToDesktop":
-                    pydirectinput.press("f")  # Enter
+                    self._input.press("f")  # Enter
                 case "MultiMenuExitToDesktopConfirmation":
-                    pydirectinput.press("a")  # Left
-                    pydirectinput.press("f")  # Enter
+                    self._input.press("a")  # Left
+                    self._input.press("f")  # Enter
                     did_exit = True
                 case _:
                     pass
