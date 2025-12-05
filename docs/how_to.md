@@ -19,8 +19,8 @@ Miyoka を使うと、複数の試合やラウンドを素早く切り替えな�
 
 ## はじめて使う方へ
 
-セットアップ手順については [Getting started](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/blob/main/docs/getting_started.md) を参照してください。
+セットアップ手順については [Getting started](./getting_started.md) を参照してください。
 
 ## フィードバック
 
-改善のアイデアや不具合の報告は、[GitHub リポジトリの Issue](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka) までお願いします。
+改善のアイデアや不具合の報告は、[GitHub リポジトリの Issue](https://github.com/TomyFovos/replay-miyoka/issues) までお願いします。

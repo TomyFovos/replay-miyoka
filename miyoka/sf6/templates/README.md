@@ -28,4 +28,4 @@ https://www.capcomusa.com/video-policy/
 
 ### 連絡先
 
-お問い合わせは fgc-replay-miyoka@gmail.com までお願いします。
+本プロジェクトに関するお問い合わせは、GitHub の Issue をご利用ください。
