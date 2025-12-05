@@ -12,9 +12,9 @@ game:
     # `name`: Name of the player displayed in replay viewer.
     # `id`: Identifier of the player in the game. Replay Uploader crawls replays associated with the ID in the game.
     # `pattern`: Pattern of the player name in the game. This is used to filter the replay dataset for each player.
-    - name: "Fovos"
-      id: "1068275383"
-      pattern: "Fovos"
+    - name: "自分"
+      id: "1111111111"
+      pattern: "自分"
     - name: "友達A"
       id: "9876543210"
       pattern: "FriendA"
@@ -40,7 +40,7 @@ replay_recorder:
   skip_recording: false
   # Directory to save the recorded replays. Supports absolute or relative paths.
   # Actual files are placed under <local_file_storage_dir>/<player_id>/.
-  local_file_storage_dir: replays
+  local_file_storage_dir: D:/StreetFighter
   # If true, each round is recorded separately. e.g. If a match had three rounds, there will be three videos.
   separate_round: false
   # If true, exit the game when replay upload is done.
