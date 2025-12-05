@@ -9,17 +9,17 @@ $is_obs_running = Get-Process -Name $obs_process_name -ErrorAction SilentlyConti
 
 if ($is_obs_running -eq $null) {
     Write-Host "OBS Studio is not running. Starting OBS Studio..."
-    Start-Process "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\OBS Studio\OBS Studio (64bit).lnk" "--disable-shutdown-check"
+    Start-Process "C:\Program Files\obs-studio\bin\64bit\obs64.exe" "--disable-shutdown-check"
 } else {
     Write-Host "OBS Studio is already running."
 }
 
-poetry run python miyoka/customize-screen.py change
+# poetry run python miyoka/customize-screen.py change
 
-if ($LastExitCode -ne 0) {
-    Write-Host "Failed to change the screen resolution. LastExitCode: $LastExitCode. Exiting..."
-    exit
-}
+# if ($LastExitCode -ne 0) {
+#     Write-Host "Failed to change the screen resolution. LastExitCode: $LastExitCode. Exiting..."
+#     exit
+# }
 
 poetry run python miyoka/replay-recorder.py
 
@@ -28,12 +28,12 @@ if ($LastExitCode -ne 0) {
     exit
 }
 
-poetry run python miyoka/customize-screen.py restore
+# poetry run python miyoka/customize-screen.py restore
 
-if ($LastExitCode -ne 0) {
-    Write-Host "Failed to restore the screen resolution. LastExitCode: $LastExitCode. Exiting..."
-    exit
-}
+# if ($LastExitCode -ne 0) {
+#     Write-Host "Failed to restore the screen resolution. LastExitCode: $LastExitCode. Exiting..."
+#     exit
+# }
 
 Write-Host "Stopping OBS..."
 Stop-Process -Name $obs_process_name

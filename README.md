@@ -1,42 +1,53 @@
-[![Releases](https://img.shields.io/github/release/fgcreplaymiyoka/fgc-replay-miyoka?style=flat-square)](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/releases)
-[![CI](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/actions/workflows/publish.yml/badge.svg)](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/actions/workflows/publish.yml)
-[![License](https://img.shields.io/github/license/fgcreplaymiyoka/fgc-replay-miyoka)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/FgcReplayMiyoka.svg?style=social&label=Follow%20%40FgcReplayMiyoka)](https://x.com/FgcReplayMiyoka)
+[![License](https://img.shields.io/github/license/TomyFovos/replay-miyoka)](https://www.gnu.org/licenses/gpl-3.0.html)
 
-# FGC Replay Miyoka 🕹️
+# Replay Miyoka 🕹️
 
-FGC Replay Miyoka (Miyoka) is a fighting game replay server for the fighting game community (FGC).
-You can host your Miyoka server to watch your replays from anywhere even if you're away from a console or PC.
-It's open source and free.
+Replay Miyoka（以下 Miyoka）は、対戦格闘ゲームのリプレイ録画を自動化し、ローカルに保存するオープンソースのツールです。
 
-## Demo
+> **📝 このリポジトリについて:** 本プロジェクトは [fgcreplaymiyoka/fgc-replay-miyoka](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka) からフォークしたものです。オリジナルプロジェクトの素晴らしい基盤に感謝いたします。
 
-https://miyoka-viewer-zx3a43w2pa-an.a.run.app
+## 主な機能
 
-## Why Miyoka?
+- **リプレイの自動録画** - ゲーム内リプレイを自動で再生・録画
+- **ローカル保存** - 録画したリプレイをローカルディレクトリに保存
+- **日本語対応** - 日本語版ゲームに対応したテンプレート画像を同梱
 
-Most of the fighting games allow you to watch replays in the game UI on a console or PC/Steam, but don't allow you to watch it from your mobile phones.
-This interface is a bit counter-intuitive because:
+## オリジナル版との違い
 
-- When you're playing a fighting game on a console or PC, you'd want to play something interactive like online matches or training mode. You are reluctant to watch replays because it's boring.
-- If you don't watch replays, you have no idea how you're _actually_ playing, so you have no idea why you're losing in online matches, which is frustrating.
+このフォーク版は、オリジナル版から以下の機能を変更・削除しています：
 
-Miyoka's goal is to change this flow to:
+- ❌ ブラウザ版リプレイビューアー機能の削除
+- ❌ Google Cloud Platform（GCP）へのアップロード機能の削除
+- ❌ シーン解析・ベクトル化機能の削除
+- ✅ ローカルファイル保存機能の強化
+- ✅ 日本語版ゲームへの対応
 
-- You watch your replays on your phone whenever you have time, like when you're commuting to the office or during a lunch break.
-- Ater a long day at work, you can play online matches right away because you already finished recapping your replays in daytime.
-- You can effectively use your time.
+## なぜ Miyoka なのか
 
-In short, Miyoka is an assistant to let you enjoy fighting games more than ever! 🕹️
+多くの格闘ゲームはコンソールや PC（Steam）上でリプレイを視聴できますが、一つずつ手動で再生するのは手間がかかります。
 
-## Your replays are private
+Miyoka は、次のような流れを自動化することで、こうした手間を解消します。
 
-You host your Miyoka server, meaning you are the only one who can see your replays.
-You have to set your unique password when you're setting up a new Miyoka server.
+- リプレイを自動で連続録画し、動画ファイルとして保存
+- 録画した動画は任意のプレイヤーで視聴可能
+- プレイヤーID やリプレイ ID を指定して特定のリプレイのみを録画
 
-If you want to share your replays with a friend or a coach, you can download and share a replay with them or tell them the replay ID.
+まとめると、Miyoka は格闘ゲームのリプレイ管理を効率化するためのツールです。🕹️
 
-## Getting Started
+## リプレイは完全にプライベート
 
-See [Getting Started](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/blob/main/docs/getting_started.md) doc.
+録画されたリプレイはすべてローカル PC に保存されます。クラウドへのアップロードは行われないため、プライバシーが確保されます。
+
+## はじめ方
+
+[Getting Started](./docs/getting_started.md) を参照してください。
+
+## 謝辞
+
+このプロジェクトは [fgcreplaymiyoka/fgc-replay-miyoka](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka) をベースにしています。
+オリジナルプロジェクトの開発者の皆様に心より感謝申し上げます。
+
+## ライセンス
+
+本プロジェクトは [GPL-3.0 License](./LICENSE) の下で公開されています。
 

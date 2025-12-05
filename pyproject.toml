@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["FGC Replay Miyoka <fgcreplaymiyoka@gmail.com>"]
 readme = "README.md"
+packages = [{include = "miyoka"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -17,7 +18,7 @@ google-cloud-vision = "^3.7.2"
 python-json-logger = "^2.0.7"
 black = "^24.4.2"
 flake8 = "^7.0.0"
-dependency-injector = {extras = ["yaml"], version = "^4.41.0"}
+dependency-injector = {extras = ["yaml"], version = "^4.42.0"}
 google-cloud-bigquery = "^3.22.0"
 google-cloud-run = "^0.10.5"
 scikit-learn = "^1.5.1"

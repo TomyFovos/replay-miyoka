@@ -1,102 +1,86 @@
-# Getting started
+# はじめに
 
-## Before you start
+## 利用前の確認
 
-### Supported fighting games
+### 対応済みの格闘ゲーム
 
-Here is the list of fighting games that confirmed working in Miyoka:
+現時点で Miyoka が動作確認できているタイトルは次のとおりです。
 
-- Street Fighter 6
+- ストリートファイター6
 
-Community contributions are welcome to support more fighting games.
+他タイトルへの対応は、コミュニティからの貢献を歓迎します。
 
-### Confirm that you can watch replays in the fighting game
+### ゲーム内でリプレイを視聴できるか確認
 
-- You have a desktop or laptop that runs Windows 11.
-- You have installed Steam.
-- You have purchased the fighting game on Steam.
-- You can launch the game and access your replays in the game UI.
+- Windows 11 が動作するデスクトップまたはノート PC を用意している。
+- Steam をインストール済みである。
+- 対応格闘ゲームを Steam で購入している。
+- ゲームを起動し、ゲーム内の UI からリプレイにアクセスできる。
 
-## Setup
+## セットアップ
 
-Tutorial video:
+### Miyoka のセットアップ
 
-[![Tutorial](https://img.youtube.com/vi/DYYpQVEDRVA/0.jpg)](https://www.youtube.com/watch?v=DYYpQVEDRVA)
-
-### Create your project in Google Cloud Platform
-
-NOTE:
-If you want to [save replays in your computer instead of cloud storage](./getting_started/sf6.md#save-replays-in-your-computer), skip this step.
-
-1. [Create a new GCP project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#console).
-1. [Install `gcloud` CLI](https://cloud.google.com/sdk/docs/install). Follow the instruction to login to the GCP from `gcloud`.
-
-### Setup Miyoka
-
-1. Install [Python 3.11.3](https://www.python.org/downloads/windows/).
-    - Recommended: [Windows installer (64-bit)](https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe)
-1. Install [Poetry](https://python-poetry.org/docs/#installing-with-pipx).
-    - Recommended: [With the official installer](https://python-poetry.org/docs/#installing-with-the-official-installer). Follow the instruction to add PATH configuration in your terminal.
-1. [Download Miyoka](https://github.com/fgcreplaymiyoka/fgc-replay-miyoka/releases).
-    1. Click **Source code (zip)** of the latest version.
-    1. Right-click the downloaded file and select **Extract All**.
-1. Install dependencies of Miyoka:
-    1. Open a **Windows Powershell** in your windows.
-        1. Click the Start or Search icon, and then type "powershell" in the search box.
-        1. Click "Open" or "Run as Administrator" to open PowerShell either normally or with administrative privileges.
-    1. Change the current directory to the downloaded Miyoka project. e.g.
+1. [Python 3.11.3](https://www.python.org/downloads/windows/) をインストール。
+    - 推奨: [Windows installer (64-bit)](https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe)
+1. [Poetry](https://python-poetry.org/docs/#installing-with-pipx) をインストール。
+    - 推奨: [公式インストーラ](https://python-poetry.org/docs/#installing-with-the-official-installer)。提示される PATH 設定の手順も忘れず実施してください。
+1. [Miyoka をダウンロード](https://github.com/TomyFovos/replay-miyoka/releases)します。
+    1. 最新版の **Source code (zip)** をクリック。
+    1. ダウンロードしたファイルを右クリックし、**すべて展開** を選択。
+1. 依存関係のインストール:
+    1. **Windows PowerShell** を開きます（管理者権限である必要はありません）。
+        1. スタートメニューまたは検索アイコンをクリックし、検索ボックスに「powershell」と入力。
+        1. 「開く」または「管理者として実行」を選択して PowerShell を起動。
+    1. 展開した Miyoka プロジェクトのディレクトリへ移動。例:
         ```shell
-        cd c:\Users\name\Downloads\fgc-replay-miyoka-x.x.x\fgc-replay-miyoka-x.x.x
+        cd c:\Users\name\Downloads\replay-miyoka-x.x.x\replay-miyoka-x.x.x
         ```
-        Tips: To copy the path, you can drag-and-drop the folder from the File explorer to the Powershell terminal.
-    1. Install dependencies via poetry:
+        ヒント: エクスプローラーからフォルダーを PowerShell にドラッグ＆ドロップするとパスを自動入力できます。
+    1. poetry で依存関係をインストール:
         ```shell
         poetry install --with win
         ```
-1. Right-click on the `miyoka/setup.ps1` file and click **Run with PowerShell**.
-    Alternatively, you can open Windows Powershell and execute the following command:
+1. `setup.ps1` を右クリックし **PowerShell で実行** を選択。
+    もしくは PowerShell で以下を実行します。
     ```shell
     powershell.exe -executionpolicy bypass -file .\setup.ps1
     ```
-    This command creates a `config.yaml` file in your Miyoka folder, which
-    contains all of the information for your Miyoka server.
-    Do **NOT** share it with someone else since it contains secrets.
-1. Replace `<required>` values by your information in `config.yaml`.
+    コマンド実行後、Miyoka フォルダ内に `config.yaml` が作成され、設定がまとめて保存されます。
+1. `config.yaml` を編集し、プレイヤー情報などを自分の情報に置き換えます。
 
-### Setup OBS
+### OBS の設定
 
-1. [Download OBS](https://obsproject.com/download).
-1. Create a new Game Capture source.
-    1. Click **Sources > + (Add Source)** button.
-    1. Select **Game Capture** and click **OK**.
-    1. Select **Mode > Capture Specific Window**.
-    1. Select **Window > [<game-title>.exe]** and click **OK**.
-1. [Enable websocket server](https://fms-manual.readthedocs.io/en/latest/audience-display/obs-integration/obs-websockets.html):
-    1. Click **Tools > WebSocket Server Settings**.
-    1. Check **Enable WebSocket server**.
-    1. Change the **Server Password** to `secret`.
-    1. Click **Apply** button.
-1. [Change recording resolution](https://obsproject.com/kb/standard-recording-output-guide) to 640x360 or 1280x720:
-    1. Click **Controls > Settings**.
-    1. Select **Video** menu.
-    1. Ensure **Base (Canvas) Resolution** is 1280x720.
-    1. Ensure **Output (Scaled) Resolution** is 640x360 or 1280x720. If you mainly watch replays without Wi-fi, it's recommended to set a lower resolution for faster streaming.
-    1. Ensure **Common FPS Values** is selected, which records the replays 60 FPS.
-    1. Click **Apply**.
-1. Output settings:
-    1. Click **Controls > Settings**.
-    1. Select **Output** menu.
-    1. Ensure **Recording format** is **MPEG-4 (.mp4)**.
-    1. Ensure **Video Encoder** is **Hardware (NVENC, H.264)** or **Software (x264)** (If your graphic card doesn't support hardware acceleration).
-    1. Click **Apply**.
+1. [OBS をダウンロード](https://obsproject.com/download)。
+1. 新規 Game Capture ソースを作成。
+    1. **Sources > + (Add Source)** をクリック。
+    1. **Game Capture** を選択して **OK**。
+    1. **Mode > Capture Specific Window** を選択。
+    1. **Window > [<game-title>.exe]** を指定して **OK**。
+1. [WebSocket サーバーを有効化](https://fms-manual.readthedocs.io/en/latest/audience-display/obs-integration/obs-websockets.html)。
+    1. **Tools > WebSocket Server Settings** を開く。
+    1. **Enable WebSocket server** にチェック。
+    1. **Server Password** を `secret` に変更。
+    1. **Apply** をクリック。
+1. [録画解像度を 640x360 または 1280x720 に設定](https://obsproject.com/kb/standard-recording-output-guide)。
+    1. **Controls > Settings** をクリック。
+    1. **Video** メニューを開く。
+    1. **Base (Canvas) Resolution** を 1280x720 に設定。
+    1. **Output (Scaled) Resolution** を 640x360 または 1280x720 に設定。
+    1. **Common FPS Values** を選択し、60 FPS で録画。
+    1. **Apply** をクリック。
+1. 出力設定:
+    1. **Controls > Settings**。
+    1. **Output** メニュー。
+    1. **Recording format** を **MPEG-4 (.mp4)** に設定。
+    1. **Video Encoder** を **Hardware (NVENC, H.264)** または **Software (x264)** に設定（GPU が非対応ならソフトウェアを使用）。
+    1. **Apply** をクリック。
 
-## Continue
+## 続き
 
-- [Getting started for Street Fighter 6](getting_started/sf6.md)
+- [ストリートファイター6向けセットアップ](getting_started/sf6.md)
 
-## Delete Miyoka server
+## アンインストール
 
-You can delete your Miyoka server by the following steps:
-
-- Delete your GCP project. Follow https://cloud.google.com/resource-manager/docs/creating-managing-projects#shutting_down_projects.
-  This cascadingly delete all of your resources (e.g. replays in storages).
+Miyoka を削除するには、ダウンロードした Miyoka フォルダを削除するだけです。
+録画されたリプレイは `replays` フォルダ内に保存されているため、必要に応じてバックアップしてください。

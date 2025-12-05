@@ -1,11 +1,11 @@
 import time
 import os
 import cv2 as cv
-import numpy as np
 import pathlib
 from logging import Logger
-from google.cloud import vision
 from miyoka.libs.utils import retry
+import pytesseract
+from PIL import Image
 
 try:
     import dxcam
@@ -26,7 +26,8 @@ class GameWindowHelper:
         self.window_name = window_name
         self.extra = extra
         self.margin = margin
-        self._screen_language = DEFAULT_SCREEN_LANGUAGE
+        # Use language from config if available, otherwise fallback to default
+        self._screen_language = extra.get("original_language", DEFAULT_SCREEN_LANGUAGE) if extra else DEFAULT_SCREEN_LANGUAGE
 
     def init_camera(self):
         self.camera = dxcam.create(
@@ -158,6 +159,25 @@ class GameWindowHelper:
         bottom = game_window.bottom
         width = game_window.right - game_window.left
         height = game_window.bottom - game_window.top
+        
+        # Adjust for window borders/titlebar to get client area
+        # Windows typically adds ~8px border on each side and ~31px titlebar
+        # We normalize to standard resolutions
+        if width > WIDTH_1280 and width < WIDTH_1280 + self.margin:
+            border_x = (width - WIDTH_1280) // 2
+            left = left + border_x
+            right = left + WIDTH_1280
+            width = WIDTH_1280
+        if height > HEIGHT_720 and height < HEIGHT_720 + self.margin:
+            # タイトルバー（上）とボーダー（下）を分けて調整
+            # 一般的なWindows: タイトルバー ~31px, 下ボーダー ~8px
+            total_extra = height - HEIGHT_720
+            border_bottom = 8  # 下ボーダーの推定値
+            titlebar_top = total_extra - border_bottom
+            top = top + titlebar_top
+            height = HEIGHT_720
+            bottom = top + height
+        
         region = (left, top, right, bottom)
         size = (width, height)
         self.logger.info(
@@ -186,69 +206,40 @@ class GameWindowHelper:
 
         return template_files
 
-    def mirror_p2_roi_from(self, p1_roi):
-        (x, y, width, height) = p1_roi
-        return (self._current_screen_width - (x + width), y, width, height)
-
     def detect(self, image, template, method=cv.TM_CCOEFF_NORMED):
         w, h = template.shape[::-1]
+        img_h, img_w = image.shape[:2]
+        
+        # Skip if template is larger than image
+        if w > img_w or h > img_h:
+            return 0, (0, 0, w, h)
+        
         res = cv.matchTemplate(image, template, method)
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
         (x, y) = max_loc
         return max_val, (x, y, w, h)
 
-    def detect_multi(self, image, template, threthold, method=cv.TM_CCOEFF_NORMED):
-        w, h = template.shape[::-1]
-
-        res = cv.matchTemplate(image, template, method)
-        loc = np.where(res >= threthold)
-
-        areas = []
-        for pt in zip(*loc[::-1]):
-            x = pt[0]
-            y = pt[1]
-            width = w
-            height = h
-            areas.append([x, y, width, height])
-
-        return areas
-
-    def mse(self, img1, img2):
-        img1 = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
-        img2 = cv.cvtColor(img2, cv.COLOR_BGR2GRAY)
-        h, w = img1.shape
-        diff = cv.subtract(img1, img2)
-        err = np.sum(diff**2)
-        mse = err / (float(h * w))
-        return mse
-
     @retry(max_retries=3, delay=2)
     def detect_text(self, path):
-        """Detects text in the file."""
+        """Detects text in the file using local Tesseract OCR."""
 
-        client = vision.ImageAnnotatorClient()
+        # 画像をグレースケールで読み込み
+        image = cv.imread(path, cv.IMREAD_GRAYSCALE)
+        if image is None:
+            raise ValueError(f"Failed to load image for OCR: {path}")
 
-        with open(path, "rb") as image_file:
-            content = image_file.read()
+        # 簡単な前処理: 二値化でコントラストを上げる
+        _, thresh = cv.threshold(
+            image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU
+        )
 
-        image = vision.Image(content=content)
+        pil_img = Image.fromarray(thresh)
 
-        response = client.text_detection(image=image)
-        texts = response.text_annotations
+        # 一行テキスト想定で英数字を優先して読む
+        text = pytesseract.image_to_string(
+            pil_img,
+            lang="eng",
+            config="--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:/-"
+        )
 
-        for text in texts:
-            vertices = [
-                f"({vertex.x},{vertex.y})" for vertex in text.bounding_poly.vertices
-            ]
-
-            # print("bounds: {}".format(",".join(vertices)))
-
-            return text.description
-
-        if response.error.message:
-            raise Exception(
-                "{}\nFor more info on error messages, check: "
-                "https://cloud.google.com/apis/design/errors".format(
-                    response.error.message
-                )
-            )
+        return text.strip()
